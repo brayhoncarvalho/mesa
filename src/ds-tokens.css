@@ -1,0 +1,173 @@
+/* ============================================================
+   Design System — Dock Crédito "Confiança Premium" v1.0
+   Fonte da verdade: layouts 1b / 2b / 2d (Redesign Landing.dc.html)
+   NUNCA usar valores fora deste arquivo.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  /* ---------- CORES: marca (teal — landing page) ---------- */
+  --brand-950: #021D1F;            /* reservado — evitar no Premium */
+  --brand-900: #042A2C;            /* texto sobre ciano; hover do primário */
+  --brand-800: #063B3E;            /* COR PRIMÁRIA: botões, seção escura, slider */
+  --brand-700: #0A5457;            /* fim do degradê do CTA banner */
+
+  /* ---------- CORES: acento (teal) ---------- */
+  --accent-500: #00D8D8;           /* CTA de conversão (1 por viewport) */
+  --accent-600: #0FC5C5;           /* hover do CTA ciano */
+  --teal-600: #0FA3A3;             /* links, números de passo, ✓, +/− FAQ */
+  --teal-700: #0A7C7C;             /* texto de badge sobre teal-100 */
+
+  /* ---------- CORES: tintas (teal) ---------- */
+  --teal-50:  #F4FDFC;             /* fundo de opção selecionada */
+  --teal-100: #DFF3F1;             /* fundo de chips ✓, badges, ícones */
+  --teal-200: #B9DEDA;             /* borda de círculos numerados */
+
+  /* ---------- CORES: admin / Mesa (blue theme) ---------- */
+  --admin-navy: #0E2A5C;           /* headings e titulos admin */
+  --admin-blue: #1D4FD7;           /* accent azul — ativo, links, CTAs */
+  --admin-blue-hover: #1740B0;     /* hover do accent azul */
+  --admin-blue-100: #EAF1FE;       /* fundo de item ativo, avatar */
+  --admin-blue-50: #F0F5FD;        /* fundo de hover */
+  --admin-blue-border: #DBE7FD;    /* borda de elementos azuis */
+  --admin-text: #4E5F7A;           /* texto geral admin */
+  --admin-text-strong: #33455F;    /* texto forte admin */
+  --admin-muted: #8296B2;          /* texto muted admin */
+  --admin-placeholder: #9BACC6;    /* placeholder inputs admin */
+  --admin-border: #E3EAF4;         /* borda universal admin */
+  --admin-border-light: #EDF2FA;   /* borda levíssima admin (separadores) */
+
+  /* ---------- CORES: superfícies e bordas ---------- */
+  --surface-page: #F6F9FD;         /* fundo de página admin (blue-gray leve) */
+  --surface-card: #FFFFFF;         /* cartões e superfícies elevadas */
+  --surface-muted: #EFF6F5;        /* botão hambúrguer, neutros discretos */
+  --border-hairline: #E3EAF4;      /* borda universal 1px */
+  --border-input: #D3DFEF;         /* borda de input 1.5px */
+  --border-radio-off: #C8C8C8;     /* radio dot não selecionado */
+
+  /* ---------- CORES: texto ---------- */
+  --text-heading: #0E2A5C;         /* navy — headings admin */
+  --text-strong: #33455F;
+  --text-body: #4E5F7A;
+  --text-muted: #8296B2;
+
+  /* ---------- CORES: sobre fundo escuro (#063B3E) ---------- */
+  --on-dark-heading: #FFFFFF;
+  --on-dark-body: rgba(255,255,255,0.68);
+  --on-dark-label: rgba(255,255,255,0.60);
+  --on-dark-muted: rgba(255,255,255,0.50);
+  --on-dark-card: rgba(255,255,255,0.06);
+  --on-dark-border: rgba(255,255,255,0.12);
+  --on-dark-accent: #00D8D8;
+  --editable-underline: rgba(0,216,216,0.5);
+  --editable-badge-bg: rgba(0,216,216,0.10);
+  --editable-badge-border: rgba(0,216,216,0.35);
+
+  /* ---------- CORES: feedback (extensão) ---------- */
+  --error-600: #A63527;
+  --error-500: #C2483B;
+  --error-50:  #FDF1EF;
+
+  /* ---------- DEGRADÊ (único permitido) ---------- */
+  --gradient-cta: linear-gradient(135deg, #063B3E 0%, #0A5457 100%);
+
+  /* ---------- TIPOGRAFIA ---------- */
+  --font-display: 'Bricolage Grotesque', sans-serif;
+  --font-body: 'Instrument Sans', sans-serif;
+
+  --fs-hero: 64px;        --lh-hero: 1.05;  --ls-hero: -0.03em;   /* mobile: 36px/1.08 */
+  --fs-h2: 44px;          --lh-h2: 1.1;     --ls-h2: -0.03em;     /* mobile: 28px */
+  --fs-h2-dark: 42px;
+  --fs-h2-cta: 40px;
+  --fs-h1-flow: 34px;     --ls-h1-flow: -0.02em;                  /* mobile: 28px */
+  --fs-h3: 22px;          --ls-h3: -0.01em;
+  --fs-h4: 19px;
+  --fs-h5: 17px;
+
+  --fs-value-xl: 42px;    /* valor do simulador — mobile: 34px */
+  --fs-value-lg: 36px;    /* valor editável do cartão escuro */
+  --fs-value-md: 28px;    /* taxa no cartão escuro */
+  --fs-value-sm: 26px;    /* parcela no resumo */
+  --fs-value-xs: 19px;    /* valor em linha de oferta */
+
+  --fs-lead: 20px;        --lh-lead: 1.6;
+  --fs-body-lg: 17px;     --lh-body-lg: 1.65;
+  --fs-body: 16px;        --lh-body: 1.6;
+  --fs-ui: 15px;
+  --fs-label: 14px;
+  --fs-caption: 13px;
+  --fs-fine: 12px;
+  --fs-micro: 11px;
+  --fs-step: 10px;        --ls-step: 0.05em;
+  --ls-microlabel: 0.04em;
+
+  /* ---------- ESPAÇAMENTO (base 4px) ---------- */
+  --sp-1: 4px;   --sp-1_5: 6px;  --sp-2: 8px;    --sp-2_5: 10px;
+  --sp-3: 12px;  --sp-3_5: 14px; --sp-4: 16px;   --sp-4_5: 18px;
+  --sp-5: 20px;  --sp-6: 24px;   --sp-7: 28px;   --sp-8: 32px;
+  --sp-9: 36px;  --sp-10: 40px;  --sp-12: 48px;  --sp-14: 56px;
+  --sp-16: 64px; --sp-20: 80px;  --sp-24: 96px;  --sp-26: 104px;
+
+  /* ---------- LAYOUT ---------- */
+  --container-max: 1200px;
+  --container-flow: 1024px;
+  --content-form: 560px;
+  --content-proposal: 680px;
+  --stepper-max: 640px;
+  --gutter-desktop: 40px;
+  --gutter-mobile: 20px;
+  --header-h: 80px;       /* fluxo: 72px; mobile: 64px */
+
+  /* ---------- ALTURAS ---------- */
+  --h-btn-lg: 58px;       /* banner: 60px */
+  --h-btn-md: 56px;       /* CTA em cartões */
+  --h-btn-mobile: 52px;
+  --h-btn-nav: 46px;
+  --h-btn-outline: 42px;
+  --h-input: 50px;
+  --h-chip: 44px;         /* mobile: 42px */
+  --h-badge: 28px;
+
+  /* ---------- RAIOS ---------- */
+  --radius-pill: 999px;
+  --radius-cta-banner: 32px;
+  --radius-card-lg: 28px;
+  --radius-card: 24px;
+  --radius-item: 18px;
+  --radius-offer: 16px;
+  --radius-note: 14px;
+  --radius-input: 12px;
+  --radius-sm: 8px;
+  --radius-full: 50%;
+
+  /* ---------- BORDAS ---------- */
+  --bw-hairline: 1px;
+  --bw-input: 1.5px;
+  --bw-selected: 2px;
+
+  /* ---------- SOMBRAS (matiz verde, nunca preto puro) ---------- */
+  --shadow-card-sm: 0 8px 24px rgba(6,59,62,0.06);
+  --shadow-card: 0 12px 40px rgba(6,59,62,0.06);
+  --shadow-card-mobile: 0 16px 48px rgba(6,59,62,0.10);
+  --shadow-card-lg: 0 20px 60px rgba(6,59,62,0.10);
+  --shadow-frame: 0 24px 64px rgba(4,42,44,0.18);
+  --shadow-thumb: 0 2px 6px rgba(4,42,44,0.2);
+}
+
+/* ---------- Base ---------- */
+body {
+  margin: 0;
+  background: var(--surface-page);
+  font-family: var(--font-body);
+  color: var(--text-body);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--text-heading);
+  margin: 0;
+}
+a { color: var(--teal-600); }
+a:hover { color: var(--brand-800); }
