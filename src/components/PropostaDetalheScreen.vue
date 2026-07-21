@@ -751,11 +751,8 @@ async function confirmarDecisao() {
         </div>
       </section>
 
-    </div><!-- /pd-content -->
-  </main>
-
-  <!-- ── Barra de ações (fixed) ────────────────────── -->
-  <div class="pd-action-bar" aria-label="Decisão da proposta">
+      <!-- ── Barra de ações ────────────────────── -->
+      <div class="pd-action-bar" aria-label="Decisão da proposta">
     <span class="pd-action-bar__label">
       Analisando proposta de <strong>{{ proposta?.nome }}</strong>
     </span>
@@ -778,6 +775,9 @@ async function confirmarDecisao() {
       Aprovar proposta
     </button>
   </div>
+
+    </div><!-- /pd-content -->
+  </main>
 
   <!-- ── Toast ──────────────────────────────────────── -->
   <Transition name="pd-toast">
@@ -851,7 +851,7 @@ async function confirmarDecisao() {
   flex: 1;
   min-width: 0;
   overflow-y: auto;
-  padding: 24px 28px 100px;
+  padding: 24px 28px 32px;
   background: var(--surface-page);
 }
 .pd-content {
@@ -1192,21 +1192,13 @@ async function confirmarDecisao() {
 
 /* ── Sticky action bar ──────────────────────────────────────────── */
 .pd-action-bar {
-  position: fixed;
-  bottom: 20px;
-  left: calc(var(--sb-w, 216px) + 20px);
-  right: 20px;
-  max-width: 820px;
-  margin: 0 auto;
   display: flex; align-items: center; gap: 10px;
-  padding: 12px 18px;
+  padding: 14px 20px;
   background: rgba(14, 42, 92, 0.96);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.10);
   border-radius: 16px;
-  box-shadow: 0 20px 50px rgba(14,42,92,.30), 0 0 0 1px rgba(255,255,255,.06);
+  box-shadow: 0 4px 16px rgba(14,42,92,.18);
   flex-wrap: wrap;
-  z-index: 50;
 }
 .pd-action-bar__label {
   font-size: 13px; color: rgba(255,255,255,.65);
@@ -1345,7 +1337,7 @@ async function confirmarDecisao() {
   .pd-hero__values { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 600px) {
-  .pd-main         { padding: 16px 16px 100px; }
+  .pd-main         { padding: 16px 16px 24px; }
   .pd-hero         { padding: 20px; }
   .pd-hero__values { grid-template-columns: 1fr 1fr; }
   .pd-hero__val-num { font-size: 18px; }
