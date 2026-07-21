@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build output (gerado pelo workflow CI/CD)
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Arquivos locais
+Mesa.zip
+screenshots/
+
+# Env com tokens
+.env.local
+.env.*.local
