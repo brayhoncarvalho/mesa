@@ -222,7 +222,7 @@ const situacaoLabel: Record<string, string> = {
           <!-- Bar chart -->
           <div class="card chart-card">
             <h2 class="chart-title">Visão Geral Semanal</h2>
-            <svg :viewBox="`0 0 ${SVG_W} ${SVG_H}`" class="bar-svg" preserveAspectRatio="none" aria-hidden="true">
+            <svg :viewBox="`0 0 ${SVG_W} ${SVG_H}`" class="bar-svg" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
               <!-- grid lines -->
               <line v-for="gl in barChart.grids" :key="gl.v"
                 :x1="ML" :y1="gl.y" :x2="SVG_W-8" :y2="gl.y" stroke="#f1f5f9" stroke-width="1"/>
@@ -497,7 +497,7 @@ const situacaoLabel: Record<string, string> = {
   letter-spacing: -0.01em;
   margin: 0 0 var(--sp-3_5);
 }
-.bar-svg { width: 100%; height: 180px; display: block; }
+.bar-svg { width: 100%; height: auto; max-height: 200px; display: block; }
 .bar-legend {
   display: flex;
   flex-wrap: wrap;
