@@ -160,10 +160,6 @@ export const cobrancaParcelasStore = ref<CobrancaParcela[]>([
   { id: 'parc-017', propostaId: 'b2c67f90', clienteNome: 'Roberto Silva Santos',         numeroParcela: 1,  totalParcelas: 60, vencimento: '01/04/2026', valor: 'R$ 2.105,00', dataPagamento: '01/04/2026', status: 'Pago' },
   { id: 'parc-018', propostaId: 'b2c67f90', clienteNome: 'Roberto Silva Santos',         numeroParcela: 2,  totalParcelas: 60, vencimento: '01/05/2026', valor: 'R$ 2.105,00', dataPagamento: '02/05/2026', status: 'Pago' },
   { id: 'parc-019', propostaId: 'b2c67f90', clienteNome: 'Roberto Silva Santos',         numeroParcela: 3,  totalParcelas: 60, vencimento: '01/06/2026', valor: 'R$ 2.105,00', dataPagamento: null,         status: 'Pendente' },
-  // Mariana Costa Oliveira — Emp. Pessoal 48x
-  { id: 'parc-020', propostaId: 'd5e34b78', clienteNome: 'Mariana Costa Oliveira',       numeroParcela: 1,  totalParcelas: 48, vencimento: '22/05/2026', valor: 'R$ 654,20',  dataPagamento: '21/05/2026', status: 'Pago' },
-  { id: 'parc-021', propostaId: 'd5e34b78', clienteNome: 'Mariana Costa Oliveira',       numeroParcela: 2,  totalParcelas: 48, vencimento: '22/06/2026', valor: 'R$ 654,20',  dataPagamento: null,         status: 'Em Atraso' },
-  { id: 'parc-022', propostaId: 'd5e34b78', clienteNome: 'Mariana Costa Oliveira',       numeroParcela: 3,  totalParcelas: 48, vencimento: '22/07/2026', valor: 'R$ 654,20',  dataPagamento: null,         status: 'Pendente' },
 ])
 
 export const cobrancaArquivosStore = ref<CobrancaArquivo[]>([

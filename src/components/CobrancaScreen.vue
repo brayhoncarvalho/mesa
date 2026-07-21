@@ -2,85 +2,77 @@
 import { ref, computed } from 'vue'
 import { cobrancaParcelasStore, cobrancaArquivosStore } from '../store'
 
-const abaAtiva = ref<'parcelas' | 'arquivos'>('parcelas')
+const abaAtiva = ref<'contratos' | 'arquivos'>('contratos')
 
-// ── Filtros parcelas ──────────────────────────────────────────────
-const filtroBusca  = ref('')
-const filtroStatus = ref('')
-const filtroMes    = ref('')
+// -- Agrupamento por contrato -----------------------------------------
+function parseValor(v: string) {
+  return parseFloat(v.replace('R$', '').replace(/\./g, '').replace(',', '.').trim()) || 0
+}
+function formatR(v: number) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }
 
-// ── Meses disponíveis (derivados dos dados) ───────────────────────
-const mesesDisponiveis = computed(() => {
-  const set = new Set<string>()
-  cobrancaParcelasStore.value.forEach(p => {
-    const [, m, a] = p.vencimento.split('/')
-    set.add(`${a}-${m}`)
-  })
-  return [...set].sort().map(v => {
-    const [a, m] = v.split('-')
-    const nome = new Date(`${a}-${m}-01`).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
-    return { value: v, label: nome.charAt(0).toUpperCase() + nome.slice(1) }
-  })
+const contratos = computed(() => {
+  const map = new Map<string, {
+    propostaId: string; clienteNome: string; totalParcelas: number
+    pagas: number; emAtraso: number; pendentes: number
+    valorEmAtraso: number; proximoVencimento: string | null
+  }>()
+
+  for (const p of cobrancaParcelasStore.value) {
+    if (!map.has(p.propostaId)) {
+      map.set(p.propostaId, {
+        propostaId: p.propostaId,
+        clienteNome: p.clienteNome,
+        totalParcelas: p.totalParcelas,
+        pagas: 0, emAtraso: 0, pendentes: 0,
+        valorEmAtraso: 0,
+        proximoVencimento: null,
+      })
+    }
+    const c = map.get(p.propostaId)!
+    if (p.status === 'Pago')      c.pagas++
+    if (p.status === 'Em Atraso') { c.emAtraso++; c.valorEmAtraso += parseValor(p.valor) }
+    if (p.status === 'Pendente')  c.pendentes++
+    if ((p.status === 'Em Atraso' || p.status === 'Pendente') && !c.proximoVencimento) {
+      c.proximoVencimento = p.vencimento
+    }
+  }
+
+  return [...map.values()].map(c => ({
+    ...c,
+    statusContrato: c.emAtraso > 0 ? 'Em Atraso' : c.pendentes > 0 ? 'Em Dia' : 'Quitado',
+  }))
 })
 
-// ── Parcelas filtradas ────────────────────────────────────────────
-const parcelasFiltradas = computed(() =>
-  cobrancaParcelasStore.value.filter(p => {
+// -- Filtros ----------------------------------------------------------
+const filtroBusca  = ref('')
+const filtroStatus = ref('Em Atraso')
+
+const contratosFiltrados = computed(() =>
+  contratos.value.filter(c => {
     const busca = filtroBusca.value.toLowerCase()
-    if (busca && !p.propostaId.toLowerCase().includes(busca) && !p.clienteNome.toLowerCase().includes(busca)) return false
-    if (filtroStatus.value && p.status !== filtroStatus.value) return false
-    if (filtroMes.value) {
-      const [, m, a] = p.vencimento.split('/')
-      if (`${a}-${m}` !== filtroMes.value) return false
+    if (busca && !c.clienteNome.toLowerCase().includes(busca) && !c.propostaId.toLowerCase().includes(busca)) return false
+    if (filtroStatus.value && filtroStatus.value !== 'Todos') {
+      if (c.statusContrato !== filtroStatus.value) return false
     }
     return true
   })
 )
 
-// ── KPIs ──────────────────────────────────────────────────────────
-function somarValores(lista: typeof cobrancaParcelasStore.value) {
-  return lista.reduce((acc, p) => {
-    const v = parseFloat(p.valor.replace('R$', '').replace(/\./g, '').replace(',', '.').trim()) || 0
-    return acc + v
-  }, 0)
-}
-function formatR(v: number) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }
+// -- KPIs (por contrato) -----------------------------------------------
+const kpiAtraso      = computed(() => contratos.value.filter(c => c.statusContrato === 'Em Atraso'))
+const kpiEmDia       = computed(() => contratos.value.filter(c => c.statusContrato === 'Em Dia'))
+const kpiQuitado     = computed(() => contratos.value.filter(c => c.statusContrato === 'Quitado'))
+const kpiValorAtraso = computed(() => kpiAtraso.value.reduce((a, c) => a + c.valorEmAtraso, 0))
 
-const kpiAtraso   = computed(() => cobrancaParcelasStore.value.filter(p => p.status === 'Em Atraso'))
-const kpiPago     = computed(() => cobrancaParcelasStore.value.filter(p => p.status === 'Pago'))
-const kpiPendente = computed(() => cobrancaParcelasStore.value.filter(p => p.status === 'Pendente'))
+function limparFiltros() { filtroBusca.value = ''; filtroStatus.value = 'Todos' }
 
-// ── Paginação ─────────────────────────────────────────────────────
-const pagina    = ref(1)
-const porPagina = 10
-
-const totalPaginas = computed(() => Math.max(1, Math.ceil(parcelasFiltradas.value.length / porPagina)))
-const parcelasPaginadas = computed(() => {
-  const inicio = (pagina.value - 1) * porPagina
-  return parcelasFiltradas.value.slice(inicio, inicio + porPagina)
-})
-
-function irParaPagina(p: number) {
-  pagina.value = Math.max(1, Math.min(p, totalPaginas.value))
+const statusContratoClass: Record<string, string> = {
+  'Em Atraso': 'badge badge--red',
+  'Em Dia':    'badge badge--blue',
+  'Quitado':   'badge badge--teal',
 }
 
-// Resetar para página 1 ao filtrar
-function resetarPagina() { pagina.value = 1 }
-
-const statusParcelaClass: Record<string, string> = {
-  'Pago':       'badge badge--teal',
-  'Em Atraso':  'badge badge--red',
-  'Pendente':   'badge badge--gray',
-}
-
-function limparFiltros() {
-  filtroBusca.value = ''
-  filtroStatus.value = ''
-  filtroMes.value = ''
-  pagina.value = 1
-}
-
-// ── Arquivos ──────────────────────────────────────────────────────
+// -- Arquivos ----------------------------------------------------------
 const filtroBanco     = ref('')
 const filtroStatusArq = ref('')
 
@@ -118,9 +110,9 @@ function downloadArquivo(nome: string) {
 
     <!-- Abas -->
     <nav class="cb-tabs" role="tablist" aria-label="Seções de cobrança">
-      <button role="tab" class="cb-tab" :class="{ 'cb-tab--active': abaAtiva === 'parcelas' }"
-        :aria-selected="abaAtiva === 'parcelas'" @click="abaAtiva = 'parcelas'">
-        Parcelas
+      <button role="tab" class="cb-tab" :class="{ 'cb-tab--active': abaAtiva === 'contratos' }"
+        :aria-selected="abaAtiva === 'contratos'" @click="abaAtiva = 'contratos'">
+        Contratos
       </button>
       <button role="tab" class="cb-tab" :class="{ 'cb-tab--active': abaAtiva === 'arquivos' }"
         :aria-selected="abaAtiva === 'arquivos'" @click="abaAtiva = 'arquivos'">
@@ -128,39 +120,45 @@ function downloadArquivo(nome: string) {
       </button>
     </nav>
 
-    <!-- ══ ABA: Parcelas ══════════════════════════════════════════ -->
-    <template v-if="abaAtiva === 'parcelas'">
+    <!-- ABA: Contratos -->
+    <template v-if="abaAtiva === 'contratos'">
 
       <!-- KPIs -->
       <div class="cb-kpi-row" role="region" aria-label="Resumo de cobrança">
         <div class="cb-kpi cb-kpi--red">
           <div class="cb-kpi__icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
           </div>
           <div>
             <p class="cb-kpi__label">Em Atraso</p>
-            <p class="cb-kpi__value">{{ kpiAtraso.length }} parcela{{ kpiAtraso.length !== 1 ? 's' : '' }}</p>
-            <p class="cb-kpi__sub">{{ formatR(somarValores(kpiAtraso)) }}</p>
-          </div>
-        </div>
-        <div class="cb-kpi cb-kpi--green">
-          <div class="cb-kpi__icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
-          <div>
-            <p class="cb-kpi__label">Pagas</p>
-            <p class="cb-kpi__value">{{ kpiPago.length }} parcela{{ kpiPago.length !== 1 ? 's' : '' }}</p>
-            <p class="cb-kpi__sub">{{ formatR(somarValores(kpiPago)) }}</p>
+            <p class="cb-kpi__value">{{ kpiAtraso.length }} contrato{{ kpiAtraso.length !== 1 ? 's' : '' }}</p>
+            <p class="cb-kpi__sub">{{ formatR(kpiValorAtraso) }} em aberto</p>
           </div>
         </div>
         <div class="cb-kpi cb-kpi--blue">
           <div class="cb-kpi__icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
           </div>
           <div>
-            <p class="cb-kpi__label">Pendentes</p>
-            <p class="cb-kpi__value">{{ kpiPendente.length }} parcela{{ kpiPendente.length !== 1 ? 's' : '' }}</p>
-            <p class="cb-kpi__sub">{{ formatR(somarValores(kpiPendente)) }}</p>
+            <p class="cb-kpi__label">Em Dia</p>
+            <p class="cb-kpi__value">{{ kpiEmDia.length }} contrato{{ kpiEmDia.length !== 1 ? 's' : '' }}</p>
+            <p class="cb-kpi__sub">Sem parcelas atrasadas</p>
+          </div>
+        </div>
+        <div class="cb-kpi cb-kpi--green">
+          <div class="cb-kpi__icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <p class="cb-kpi__label">Quitados</p>
+            <p class="cb-kpi__value">{{ kpiQuitado.length }} contrato{{ kpiQuitado.length !== 1 ? 's' : '' }}</p>
+            <p class="cb-kpi__sub">Todas as parcelas pagas</p>
           </div>
         </div>
       </div>
@@ -173,107 +171,86 @@ function downloadArquivo(nome: string) {
             <input
               id="cb-busca"
               v-model="filtroBusca"
-              @input="resetarPagina"
               type="search"
               class="cb-input"
-              placeholder="Cliente ou ID da proposta…"
-              aria-label="Buscar por cliente ou proposta"
+              placeholder="Cliente ou ID do contrato…"
+              aria-label="Buscar por cliente ou contrato"
             />
           </div>
           <div class="cb-filter-field">
-            <label for="cb-mes" class="cb-filter-label">Mês de vencimento</label>
-            <select id="cb-mes" v-model="filtroMes" @change="resetarPagina" class="cb-select" aria-label="Filtrar por mês">
-              <option value="">Todos os meses</option>
-              <option v-for="m in mesesDisponiveis" :key="m.value" :value="m.value">{{ m.label }}</option>
-            </select>
-          </div>
-          <div class="cb-filter-field">
-            <label for="cb-status" class="cb-filter-label">Status</label>
-            <select id="cb-status" v-model="filtroStatus" @change="resetarPagina" class="cb-select" aria-label="Filtrar por status">
-              <option value="">Todos</option>
-              <option>Pago</option>
+            <label for="cb-status" class="cb-filter-label">Situação</label>
+            <select id="cb-status" v-model="filtroStatus" class="cb-select" aria-label="Filtrar por situação">
+              <option value="Todos">Todos os contratos</option>
               <option>Em Atraso</option>
-              <option>Pendente</option>
+              <option>Em Dia</option>
+              <option>Quitado</option>
             </select>
           </div>
           <button
-            v-if="filtroBusca || filtroStatus || filtroMes"
+            v-if="filtroBusca || filtroStatus === 'Todos'"
             class="cb-btn-clear"
             @click="limparFiltros"
             aria-label="Limpar filtros"
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
             Limpar
           </button>
         </div>
       </div>
 
-      <!-- Tabela -->
+      <!-- Tabela de contratos -->
       <div class="cb-table-card">
         <div class="cb-table-head">
-          <h2 class="cb-table-title">Parcelas</h2>
+          <h2 class="cb-table-title">Contratos</h2>
           <span class="cb-count">
-            {{ parcelasFiltradas.length === cobrancaParcelasStore.length
-              ? `${parcelasFiltradas.length} registros`
-              : `${parcelasFiltradas.length} de ${cobrancaParcelasStore.length} registros` }}
+            {{ contratosFiltrados.length === contratos.length
+              ? `${contratosFiltrados.length} contrato${contratosFiltrados.length !== 1 ? 's' : ''}`
+              : `${contratosFiltrados.length} de ${contratos.length}` }}
           </span>
         </div>
 
         <div class="cb-table-wrap">
-          <table class="cb-table" aria-label="Parcelas">
+          <table class="cb-table" aria-label="Contratos de cobrança">
             <thead>
               <tr>
-                <th>Proposta</th>
                 <th>Cliente</th>
-                <th>Parcela</th>
-                <th>Vencimento</th>
-                <th>Valor</th>
-                <th>Data Pagamento</th>
-                <th>Status</th>
+                <th>Contrato</th>
+                <th>Parcelas</th>
+                <th>Em Atraso</th>
+                <th>Valor em Atraso</th>
+                <th>Próx. Vencimento</th>
+                <th>Situação</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-if="parcelasPaginadas.length === 0">
-                <td colspan="7" class="cb-empty">Nenhuma parcela encontrada para os filtros selecionados.</td>
+              <tr v-if="contratosFiltrados.length === 0">
+                <td colspan="7" class="cb-empty">Nenhum contrato encontrado para os filtros selecionados.</td>
               </tr>
-              <tr v-for="p in parcelasPaginadas" :key="p.id">
-                <td class="cb-td-mono">{{ p.propostaId }}</td>
-                <td class="cb-td-nome">{{ p.clienteNome }}</td>
-                <td class="cb-td-num">{{ p.numeroParcela }}/{{ p.totalParcelas }}</td>
-                <td>{{ p.vencimento }}</td>
-                <td class="cb-td-valor">{{ p.valor }}</td>
-                <td>{{ p.dataPagamento ?? '—' }}</td>
-                <td><span :class="statusParcelaClass[p.status]">{{ p.status }}</span></td>
+              <tr v-for="c in contratosFiltrados" :key="c.propostaId">
+                <td class="cb-td-nome">{{ c.clienteNome }}</td>
+                <td class="cb-td-mono">{{ c.propostaId }}</td>
+                <td class="cb-td-num">{{ c.pagas }}/{{ c.totalParcelas }}</td>
+                <td class="cb-td-atraso">
+                  <span v-if="c.emAtraso > 0" class="cb-atraso-count">{{ c.emAtraso }}</span>
+                  <span v-else class="cb-atraso-none">—</span>
+                </td>
+                <td class="cb-td-valor">
+                  <span v-if="c.valorEmAtraso > 0">{{ formatR(c.valorEmAtraso) }}</span>
+                  <span v-else class="cb-atraso-none">—</span>
+                </td>
+                <td>{{ c.proximoVencimento ?? '—' }}</td>
+                <td><span :class="statusContratoClass[c.statusContrato]">{{ c.statusContrato }}</span></td>
               </tr>
             </tbody>
           </table>
         </div>
-
-        <!-- Paginação -->
-        <div class="cb-pagination" aria-label="Paginação">
-          <span class="cb-page-info">
-            Página {{ pagina }} de {{ totalPaginas }}
-          </span>
-          <div class="cb-page-controls">
-            <button class="cb-page-btn" :disabled="pagina === 1" @click="irParaPagina(1)" aria-label="Primeira página">«</button>
-            <button class="cb-page-btn" :disabled="pagina === 1" @click="irParaPagina(pagina - 1)" aria-label="Página anterior">‹</button>
-            <button
-              v-for="n in totalPaginas" :key="n"
-              class="cb-page-btn"
-              :class="{ 'cb-page-btn--active': n === pagina }"
-              @click="irParaPagina(n)"
-              :aria-current="n === pagina ? 'page' : undefined"
-            >{{ n }}</button>
-            <button class="cb-page-btn" :disabled="pagina === totalPaginas" @click="irParaPagina(pagina + 1)" aria-label="Próxima página">›</button>
-            <button class="cb-page-btn" :disabled="pagina === totalPaginas" @click="irParaPagina(totalPaginas)" aria-label="Última página">»</button>
-          </div>
-        </div>
       </div>
     </template>
 
-    <!-- ══ ABA: Arquivos de Baixa ══════════════════════════════════ -->
+    <!-- ABA: Arquivos de Baixa -->
     <template v-if="abaAtiva === 'arquivos'">
-      <!-- Filtros -->
       <div class="cb-filter-card">
         <div class="cb-filter-row">
           <div class="cb-filter-field">
@@ -296,7 +273,6 @@ function downloadArquivo(nome: string) {
         </div>
       </div>
 
-      <!-- Tabela arquivos -->
       <div class="cb-table-card">
         <div class="cb-table-head">
           <h2 class="cb-table-title">Arquivos de Baixa</h2>
@@ -326,9 +302,11 @@ function downloadArquivo(nome: string) {
                 <td><span :class="statusArqClass[a.status]">{{ a.status }}</span></td>
                 <td>
                   <button class="cb-btn-dl" :disabled="a.status === 'Erro'" @click="downloadArquivo(a.nome)"
-                    :aria-label="`Baixar ${a.nome}`" :title="a.status === 'Erro' ? 'Arquivo com erro' : undefined">
+                    :aria-label="`Baixar ${a.nome}`">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
                     </svg>
                     Baixar
                   </button>
@@ -368,25 +346,16 @@ function downloadArquivo(nome: string) {
 .cb-kpi--red   { border-left-color: var(--error-600); }
 .cb-kpi--green { border-left-color: #0A5C36; }
 .cb-kpi--blue  { border-left-color: var(--admin-blue); }
-.cb-kpi__icon {
-  width: 36px; height: 36px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; margin-top: 2px;
-}
-.cb-kpi--red   .cb-kpi__icon { background: var(--error-50);         color: var(--error-600); }
-.cb-kpi--green .cb-kpi__icon { background: #BBF3D4;                 color: #0A5C36; }
-.cb-kpi--blue  .cb-kpi__icon { background: var(--admin-blue-100);   color: var(--admin-blue); }
+.cb-kpi__icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.cb-kpi--red   .cb-kpi__icon { background: var(--error-50);       color: var(--error-600); }
+.cb-kpi--green .cb-kpi__icon { background: #BBF3D4;               color: #0A5C36; }
+.cb-kpi--blue  .cb-kpi__icon { background: var(--admin-blue-100); color: var(--admin-blue); }
 .cb-kpi__label { font-size: var(--fs-fine); font-weight: 600; color: var(--admin-muted); margin: 0 0 2px; text-transform: uppercase; letter-spacing: .04em; }
 .cb-kpi__value { font-size: 20px; font-weight: 700; color: var(--text-strong); margin: 0 0 2px; font-family: var(--font-display); }
 .cb-kpi__sub   { font-size: var(--fs-fine); color: var(--admin-text); margin: 0; }
 
 /* Filter card */
-.cb-filter-card {
-  background: var(--surface-card);
-  border: 1px solid var(--admin-border);
-  border-radius: var(--radius-card);
-  padding: var(--sp-4) var(--sp-5);
-}
+.cb-filter-card { background: var(--surface-card); border: 1px solid var(--admin-border); border-radius: var(--radius-card); padding: var(--sp-4) var(--sp-5); }
 .cb-filter-row { display: flex; align-items: flex-end; gap: var(--sp-3); flex-wrap: wrap; }
 .cb-filter-field { display: flex; flex-direction: column; gap: var(--sp-1); }
 .cb-filter-field--grow { flex: 1; min-width: 240px; }
@@ -412,17 +381,8 @@ function downloadArquivo(nome: string) {
 .cb-btn-clear:hover { background: var(--admin-blue-50); color: var(--admin-blue); border-color: var(--admin-blue-border); }
 
 /* Table card */
-.cb-table-card {
-  background: var(--surface-card);
-  border: 1px solid var(--admin-border);
-  border-radius: var(--radius-card);
-  overflow: hidden;
-}
-.cb-table-head {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: var(--sp-4) var(--sp-5);
-  border-bottom: 1px solid var(--admin-border-light);
-}
+.cb-table-card { background: var(--surface-card); border: 1px solid var(--admin-border); border-radius: var(--radius-card); overflow: hidden; }
+.cb-table-head { display: flex; justify-content: space-between; align-items: center; padding: var(--sp-4) var(--sp-5); border-bottom: 1px solid var(--admin-border-light); }
 .cb-table-title { font-family: var(--font-display); font-size: var(--fs-h3); font-weight: 700; color: var(--text-strong); margin: 0; }
 .cb-count { font-size: var(--fs-fine); color: var(--admin-muted); white-space: nowrap; background: var(--admin-blue-50); padding: 3px 10px; border-radius: 999px; font-weight: 600; }
 .cb-table-wrap { overflow-x: auto; }
@@ -435,28 +395,11 @@ function downloadArquivo(nome: string) {
 .cb-td-nome    { font-weight: 500; color: var(--text-strong); }
 .cb-td-num     { font-family: monospace; text-align: center; }
 .cb-td-valor   { font-weight: 600; color: var(--text-strong); }
+.cb-td-atraso  { text-align: center; }
 .cb-td-arquivo { font-family: monospace; font-size: var(--fs-fine); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cb-atraso-count { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 6px; background: var(--error-50); color: var(--error-600); border-radius: 999px; font-size: 12px; font-weight: 700; }
+.cb-atraso-none  { color: var(--admin-muted); }
 .cb-empty { text-align: center; color: var(--admin-muted); padding: var(--sp-10) !important; font-size: var(--fs-label); }
-
-/* Paginação */
-.cb-pagination {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: var(--sp-3) var(--sp-5);
-  border-top: 1px solid var(--admin-border-light);
-}
-.cb-page-info { font-size: var(--fs-fine); color: var(--admin-muted); }
-.cb-page-controls { display: flex; gap: 4px; }
-.cb-page-btn {
-  min-width: 32px; height: 32px; padding: 0 var(--sp-2);
-  background: transparent; border: 1px solid var(--admin-border);
-  border-radius: var(--radius-input); font-size: var(--fs-fine);
-  font-weight: 600; color: var(--admin-text); cursor: pointer;
-  transition: background .12s, color .12s, border-color .12s;
-}
-.cb-page-btn:hover:not(:disabled) { background: var(--admin-blue-50); color: var(--admin-blue); border-color: var(--admin-blue-border); }
-.cb-page-btn--active { background: var(--admin-blue); color: #fff; border-color: var(--admin-blue); }
-.cb-page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.cb-page-btn:focus-visible { outline: 2px solid var(--admin-blue); outline-offset: 2px; }
 
 /* Download button */
 .cb-btn-dl {
