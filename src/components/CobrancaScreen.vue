@@ -64,7 +64,7 @@ const kpiEmDia       = computed(() => contratos.value.filter(c => c.statusContra
 const kpiQuitado     = computed(() => contratos.value.filter(c => c.statusContrato === 'Quitado'))
 const kpiValorAtraso = computed(() => kpiAtraso.value.reduce((a, c) => a + c.valorEmAtraso, 0))
 
-function limparFiltros() { filtroBusca.value = ''; filtroStatus.value = 'Todos' }
+function limparFiltros() { filtroBusca.value = ''; filtroStatus.value = 'Em Atraso' }
 
 const statusContratoClass: Record<string, string> = {
   'Em Atraso': 'badge badge--red',
@@ -187,7 +187,7 @@ function downloadArquivo(nome: string) {
             </select>
           </div>
           <button
-            v-if="filtroBusca || filtroStatus === 'Todos'"
+            v-if="filtroBusca || filtroStatus !== 'Em Atraso'"
             class="cb-btn-clear"
             @click="limparFiltros"
             aria-label="Limpar filtros"
