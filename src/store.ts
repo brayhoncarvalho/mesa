@@ -27,8 +27,8 @@ export const propostasListStore = ref<PropostaRow[]>([
   {
     id: 'e9435f5b', qtd: 1,
     nome: 'Franciele Santos de Jesus', cpfCnpj: '412.456.508-90',
-    canal: 'Unimed', dataBase: '-', liberado: '0,00',
-    principal: '69.000,00', parcela: '0,00',
+    canal: 'Unimed', dataBase: '-', liberado: '2.800,00',
+    principal: '2.800,00', parcela: '140,45',
     dataSolicitacao: '23/12/2025', ultimaTransicao: '23/12/2025 15:49',
     ccb: '-', atividade: 'Triagem', situacao: 'EmAnalise',
     tipoProduto: 'consignado',
@@ -136,13 +136,13 @@ export interface CobrancaArquivo {
 }
 
 export const cobrancaParcelasStore = ref<CobrancaParcela[]>([
-  // Franciele Santos de Jesus — Consignado 84x
-  { id: 'parc-001', propostaId: 'e9435f5b', clienteNome: 'Franciele Santos de Jesus',    numeroParcela: 1,  totalParcelas: 84, vencimento: '05/01/2026', valor: 'R$ 1.248,90', dataPagamento: '04/01/2026', status: 'Pago' },
-  { id: 'parc-002', propostaId: 'e9435f5b', clienteNome: 'Franciele Santos de Jesus',    numeroParcela: 2,  totalParcelas: 84, vencimento: '05/02/2026', valor: 'R$ 1.248,90', dataPagamento: '05/02/2026', status: 'Pago' },
-  { id: 'parc-003', propostaId: 'e9435f5b', clienteNome: 'Franciele Santos de Jesus',    numeroParcela: 3,  totalParcelas: 84, vencimento: '05/03/2026', valor: 'R$ 1.248,90', dataPagamento: '06/03/2026', status: 'Pago' },
-  { id: 'parc-004', propostaId: 'e9435f5b', clienteNome: 'Franciele Santos de Jesus',    numeroParcela: 4,  totalParcelas: 84, vencimento: '05/04/2026', valor: 'R$ 1.248,90', dataPagamento: '04/04/2026', status: 'Pago' },
-  { id: 'parc-005', propostaId: 'e9435f5b', clienteNome: 'Franciele Santos de Jesus',    numeroParcela: 5,  totalParcelas: 84, vencimento: '05/05/2026', valor: 'R$ 1.248,90', dataPagamento: null,         status: 'Em Atraso' },
-  { id: 'parc-006', propostaId: 'e9435f5b', clienteNome: 'Franciele Santos de Jesus',    numeroParcela: 6,  totalParcelas: 84, vencimento: '05/06/2026', valor: 'R$ 1.248,90', dataPagamento: null,         status: 'Pendente' },
+  // Franciele Santos de Jesus — Consignado 24x
+  { id: 'parc-001', propostaId: 'e9435f5b', clienteNome: 'Franciele Santos de Jesus',    numeroParcela: 1,  totalParcelas: 24, vencimento: '05/01/2026', valor: 'R$ 140,45', dataPagamento: '04/01/2026', status: 'Pago' },
+  { id: 'parc-002', propostaId: 'e9435f5b', clienteNome: 'Franciele Santos de Jesus',    numeroParcela: 2,  totalParcelas: 24, vencimento: '05/02/2026', valor: 'R$ 140,45', dataPagamento: '05/02/2026', status: 'Pago' },
+  { id: 'parc-003', propostaId: 'e9435f5b', clienteNome: 'Franciele Santos de Jesus',    numeroParcela: 3,  totalParcelas: 24, vencimento: '05/03/2026', valor: 'R$ 140,45', dataPagamento: '06/03/2026', status: 'Pago' },
+  { id: 'parc-004', propostaId: 'e9435f5b', clienteNome: 'Franciele Santos de Jesus',    numeroParcela: 4,  totalParcelas: 24, vencimento: '05/04/2026', valor: 'R$ 140,45', dataPagamento: '04/04/2026', status: 'Pago' },
+  { id: 'parc-005', propostaId: 'e9435f5b', clienteNome: 'Franciele Santos de Jesus',    numeroParcela: 5,  totalParcelas: 24, vencimento: '05/05/2026', valor: 'R$ 140,45', dataPagamento: null,         status: 'Em Atraso' },
+  { id: 'parc-006', propostaId: 'e9435f5b', clienteNome: 'Franciele Santos de Jesus',    numeroParcela: 6,  totalParcelas: 24, vencimento: '05/06/2026', valor: 'R$ 140,45', dataPagamento: null,         status: 'Pendente' },
   // Brayhon Oliveira Carvalho — Emp. Pessoal 24x
   { id: 'parc-007', propostaId: 'web-onboarding', clienteNome: 'Brayhon Oliveira Carvalho', numeroParcela: 1, totalParcelas: 24, vencimento: '20/08/2026', valor: 'R$ 175,30', dataPagamento: null, status: 'Pendente' },
   { id: 'parc-008', propostaId: 'web-onboarding', clienteNome: 'Brayhon Oliveira Carvalho', numeroParcela: 2, totalParcelas: 24, vencimento: '20/09/2026', valor: 'R$ 175,30', dataPagamento: null, status: 'Pendente' },

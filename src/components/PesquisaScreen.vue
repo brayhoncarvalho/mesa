@@ -98,7 +98,7 @@ const statusBadge: Record<string, string> = {
           aria-label="Busca"
           @keydown.enter="pesquisar"
         />
-        <button class="ps-btn-buscar" @click="pesquisar">Pesquisar</button>
+        <button class="ps-btn-buscar" type="button" @click="pesquisar">Pesquisar</button>
       </div>
     </section>
 
@@ -127,12 +127,12 @@ const statusBadge: Record<string, string> = {
           <table class="ps-table" aria-label="Resultados da pesquisa">
             <thead>
               <tr>
-                <th>Tipo</th>
-                <th>Nome</th>
-                <th>CPF / CNPJ</th>
-                <th>Status</th>
-                <th>Informações</th>
-                <th></th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Nome</th>
+                <th scope="col">CPF / CNPJ</th>
+                <th scope="col">Status</th>
+                <th scope="col">Informações</th>
+                <th scope="col"><span class="sr-only">Ações</span></th>
               </tr>
             </thead>
             <tbody>

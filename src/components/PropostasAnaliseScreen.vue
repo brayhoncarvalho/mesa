@@ -288,23 +288,21 @@ function exportarCSV() {
               <th class="pa-th">Canal</th>
               <th class="pa-th pa-th--r">Principal</th>
               <th class="pa-th">Solicitação</th>
-              <th class="pa-th">Atividade</th>
               <th class="pa-th">Situação</th>
               <th class="pa-th"></th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="propostasFiltradas.length === 0">
-              <td colspan="9" class="pa-empty">Nenhuma proposta encontrada.</td>
+              <td colspan="8" class="pa-empty">Nenhuma proposta encontrada.</td>
             </tr>
             <tr
               v-for="p in propostasFiltradas"
               :key="p.id"
               class="pa-tr"
               @click="analisar(p)"
-              role="button"
-              tabindex="0"
               @keydown.enter="analisar(p)"
+              tabindex="0"
               :aria-label="`Abrir proposta de ${p.nome}`"
             >
               <td class="pa-td pa-td--nome">
@@ -323,18 +321,12 @@ function exportarCSV() {
               </td>
               <td class="pa-td pa-td--cpf">{{ p.cpfCnpj }}</td>
               <td class="pa-td">
-                <span class="canal-badge" :style="{ background: getCanalBg(p.canal) }">{{ p.canal }}</span>
+                <span class="canal-badge">{{ p.canal }}</span>
               </td>
               <td class="pa-td pa-td--r pa-td--valor">{{ p.principal }}</td>
               <td class="pa-td pa-td--muted">{{ p.dataSolicitacao }}</td>
               <td class="pa-td">
-                <span class="ativ-badge">{{ p.atividade }}</span>
-              </td>
-              <td class="pa-td">
-                <span :class="situacaoClasses[p.situacao] || 'badge badge--gray'">
-                  <span v-if="situacaoClasses[p.situacao]" class="badge-dot" aria-hidden="true"></span>
-                  {{ situacaoLabel[p.situacao] ?? p.situacao }}
-                </span>
+                <span class="ativ-badge" :class="`ativ-badge--${p.situacao.toLowerCase()}`">{{ situacaoLabel[p.situacao] ?? p.situacao }}</span>
               </td>
               <td class="pa-td pa-td--action">
                 <button class="pa-action-btn" @click.stop="analisar(p)" :aria-label="`Analisar proposta de ${p.nome}`">
@@ -671,45 +663,30 @@ function exportarCSV() {
 .badge--red    { background: var(--error-50); color: var(--error-600); }
 .badge--gray   { background: var(--surface-muted); color: var(--text-muted); }
 
-.tipo-badge {
-  display: inline-flex;
-  align-items: center;
-  height: 24px;
-  padding: 0 10px;
-  border-radius: var(--radius-pill);
-  background: #F0F5FD;
-  color: var(--admin-text-strong);
-  font-size: 11px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-.tipo-badge--consig  { background: #F0F5FD; color: var(--admin-text-strong); }
-.tipo-badge--pessoal { background: #f3e5f5; color: #6a1b9a; }
-
-.canal-badge {
-  display: inline-flex;
-  align-items: center;
-  height: 24px;
-  padding: 0 10px;
-  border-radius: var(--radius-pill);
-  font-size: 11px;
-  font-weight: 700;
-  color: #fff;
-  white-space: nowrap;
-}
-
+/* ── Badges (padrão unificado) ────────────────────────────────── */
+.canal-badge,
+.tipo-badge,
 .ativ-badge {
-  display: inline-flex;
-  align-items: center;
-  height: 24px;
-  padding: 0 10px;
+  display: inline-flex; align-items: center;
+  height: 24px; padding: 0 10px;
   border-radius: var(--radius-pill);
-  background: var(--admin-blue-100);
-  color: var(--admin-blue);
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 11px; font-weight: 700;
   white-space: nowrap;
 }
+/* Canal */
+.canal-badge { background: #f1f5f9; color: #334155; }
+/* Tipo */
+.tipo-badge--consig  { background: #e0f2fe; color: #0369a1; }
+.tipo-badge--pessoal { background: #dbeafe; color: #1d4ed8; }
+/* Atividade */
+.ativ-badge           { background: var(--admin-blue-100); color: var(--admin-blue); }
+/* Situação — variantes semânticas */
+.ativ-badge--emanalise    { background: #dbeafe; color: #1d4ed8; }
+.ativ-badge--aprovada     { background: #dcfce7; color: #15803d; }
+.ativ-badge--liberada     { background: #d1fae5; color: #065f46; }
+.ativ-badge--reprovada    { background: #fee2e2; color: #b91c1c; }
+.ativ-badge--cancelada    { background: #f1f5f9; color: #475569; }
+.ativ-badge--formalização { background: #fef9c3; color: #854d0e; }
 
 /* Action button */
 .pa-action-btn {

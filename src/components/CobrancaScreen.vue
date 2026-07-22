@@ -1,8 +1,17 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { cobrancaParcelasStore, cobrancaArquivosStore } from '../store'
 
 const abaAtiva = ref<'contratos' | 'arquivos'>('contratos')
+const tabRefs = ref<HTMLButtonElement[]>([])
+function setAba(aba: 'contratos' | 'arquivos', i: number) {
+  abaAtiva.value = aba
+  nextTick(() => tabRefs.value[i]?.focus())
+}
+function onTabKeydown(e: KeyboardEvent, i: number) {
+  if (e.key === 'ArrowRight') setAba('arquivos', 1)
+  else if (e.key === 'ArrowLeft') setAba('contratos', 0)
+}
 
 // -- Agrupamento por contrato -----------------------------------------
 function parseValor(v: string) {
@@ -111,17 +120,25 @@ function downloadArquivo(nome: string) {
     <!-- Abas -->
     <nav class="cb-tabs" role="tablist" aria-label="Seções de cobrança">
       <button role="tab" class="cb-tab" :class="{ 'cb-tab--active': abaAtiva === 'contratos' }"
-        :aria-selected="abaAtiva === 'contratos'" @click="abaAtiva = 'contratos'">
+        id="cb-tab-contratos" aria-controls="cb-panel-contratos"
+        :aria-selected="abaAtiva === 'contratos'"
+        :tabindex="abaAtiva === 'contratos' ? 0 : -1"
+        :ref="(el: any) => { tabRefs[0] = el }"
+        @click="setAba('contratos', 0)" @keydown="onTabKeydown($event, 0)">
         Contratos
       </button>
       <button role="tab" class="cb-tab" :class="{ 'cb-tab--active': abaAtiva === 'arquivos' }"
-        :aria-selected="abaAtiva === 'arquivos'" @click="abaAtiva = 'arquivos'">
+        id="cb-tab-arquivos" aria-controls="cb-panel-arquivos"
+        :aria-selected="abaAtiva === 'arquivos'"
+        :tabindex="abaAtiva === 'arquivos' ? 0 : -1"
+        :ref="(el: any) => { tabRefs[1] = el }"
+        @click="setAba('arquivos', 1)" @keydown="onTabKeydown($event, 1)">
         Arquivos de Baixa
       </button>
     </nav>
 
     <!-- ABA: Contratos -->
-    <template v-if="abaAtiva === 'contratos'">
+    <div id="cb-panel-contratos" role="tabpanel" aria-labelledby="cb-tab-contratos" v-show="abaAtiva === 'contratos'">
 
       <!-- KPIs -->
       <div class="cb-kpi-row" role="region" aria-label="Resumo de cobrança">
@@ -215,13 +232,13 @@ function downloadArquivo(nome: string) {
           <table class="cb-table" aria-label="Contratos de cobrança">
             <thead>
               <tr>
-                <th>Cliente</th>
-                <th>Contrato</th>
-                <th>Parcelas</th>
-                <th>Em Atraso</th>
-                <th>Valor em Atraso</th>
-                <th>Próx. Vencimento</th>
-                <th>Situação</th>
+                <th scope="col">Cliente</th>
+                <th scope="col">Contrato</th>
+                <th scope="col">Parcelas</th>
+                <th scope="col">Em Atraso</th>
+                <th scope="col">Valor em Atraso</th>
+                <th scope="col">Próx. Vencimento</th>
+                <th scope="col">Situação</th>
               </tr>
             </thead>
             <tbody>
@@ -247,10 +264,10 @@ function downloadArquivo(nome: string) {
           </table>
         </div>
       </div>
-    </template>
+    </div><!-- /cb-panel-contratos -->
 
     <!-- ABA: Arquivos de Baixa -->
-    <template v-if="abaAtiva === 'arquivos'">
+    <div id="cb-panel-arquivos" role="tabpanel" aria-labelledby="cb-tab-arquivos" v-show="abaAtiva === 'arquivos'">
       <div class="cb-filter-card">
         <div class="cb-filter-row">
           <div class="cb-filter-field">
@@ -282,12 +299,12 @@ function downloadArquivo(nome: string) {
           <table class="cb-table" aria-label="Arquivos de baixa">
             <thead>
               <tr>
-                <th>Nome do Arquivo</th>
-                <th>Data Geração</th>
-                <th>Banco</th>
-                <th>Nº Registros</th>
-                <th>Status</th>
-                <th>Download</th>
+                <th scope="col">Nome do Arquivo</th>
+                <th scope="col">Data Geração</th>
+                <th scope="col">Banco</th>
+                <th scope="col">Nº Registros</th>
+                <th scope="col">Status</th>
+                <th scope="col">Download</th>
               </tr>
             </thead>
             <tbody>
@@ -316,7 +333,7 @@ function downloadArquivo(nome: string) {
           </table>
         </div>
       </div>
-    </template>
+    </div><!-- /cb-panel-arquivos -->
   </main>
 </template>
 

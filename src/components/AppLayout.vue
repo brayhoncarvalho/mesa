@@ -1,5 +1,5 @@
 ﻿<script setup lang="ts">
-import { ref, computed, reactive, watch } from 'vue'
+import { ref, computed, reactive, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { authStore } from '../store'
 
@@ -76,9 +76,34 @@ const operadorNome = computed(() => {
 })
 const operadorInicial = computed(() => operadorNome.value.charAt(0))
 
+const menuOpen = ref(false)
+function toggleMenu() { menuOpen.value = !menuOpen.value }
+function closeMenu() { menuOpen.value = false }
+
+function handleOutsideClick(e: MouseEvent) {
+  const menu = document.querySelector('.app-user-menu')
+  if (menu && !menu.contains(e.target as Node)) closeMenu()
+}
+onMounted(() => document.addEventListener('click', handleOutsideClick, true))
+onBeforeUnmount(() => document.removeEventListener('click', handleOutsideClick, true))
+
 function sair() {
+  closeMenu()
   authStore.logout()
   router.push('/login')
+}
+
+function resetFluxo() {
+  localStorage.removeItem('mesa_proposta_pendente')
+  localStorage.removeItem('mesa_dados_pessoais')
+  localStorage.removeItem('mesa_endereco')
+  closeMenu()
+  window.location.reload()
+}
+
+function irMeusDados() {
+  closeMenu()
+  router.push('/dashboard')
 }
 </script>
 
@@ -102,13 +127,10 @@ function sair() {
           </svg>
         </button>
         <!-- Logo Dock -->
-        <div
+        <a
           class="app-brand"
-          @click="router.push('/dashboard')"
-          role="button"
-          tabindex="0"
+          href="#/dashboard"
           aria-label="Mesa de Crédito — ir para Dashboard"
-          @keydown.enter="router.push('/dashboard')"
         >
           <img
             class="app-dock-logo"
@@ -116,19 +138,40 @@ function sair() {
             alt="Dock"
             aria-hidden="true"
           />
-        </div>
+        </a>
       </div>
 
       <div class="app-topbar__right">
         <span class="app-topbar__nome">{{ operadorNome }}</span>
-        <button
-          class="app-avatar"
-          @click="sair()"
-          :title="`Sair (${authStore.email})`"
-          :aria-label="`Sair — ${authStore.email}`"
-        >
-          {{ operadorInicial }}
-        </button>
+        <div class="app-user-menu">
+          <button
+            class="app-avatar"
+            @click="toggleMenu"
+            :aria-label="`Menu do usuário — ${authStore.email}`"
+            :aria-expanded="menuOpen"
+            aria-haspopup="true"
+          >
+            {{ operadorInicial }}
+          </button>
+          <div v-if="menuOpen" class="app-dropdown" role="menu">
+            <div class="app-dropdown__header">
+              <span class="app-dropdown__email">{{ authStore.email }}</span>
+            </div>
+            <button class="app-dropdown__item" role="menuitem" @click="irMeusDados">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              Meus Dados
+            </button>
+            <button class="app-dropdown__item app-dropdown__item--danger" role="menuitem" @click="resetFluxo">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+              Resetar Fluxo Salvo
+            </button>
+            <div class="app-dropdown__divider"></div>
+            <button class="app-dropdown__item app-dropdown__item--exit" role="menuitem" @click="sair">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Sair
+            </button>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -307,6 +350,54 @@ function sair() {
 }
 .app-avatar:hover { background: var(--admin-blue-border); }
 .app-avatar:focus-visible { outline: 2px solid var(--admin-blue); outline-offset: 3px; }
+
+/* ── User dropdown ────────────────────────────────────────────── */
+.app-user-menu { position: relative; }
+.app-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card-sm);
+  z-index: 200;
+  overflow: hidden;
+}
+.app-dropdown__header {
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--border-hairline);
+}
+.app-dropdown__email {
+  font-size: var(--fs-fine);
+  color: var(--text-muted);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.app-dropdown__item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  padding: var(--sp-2_5) var(--sp-4);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--fs-caption);
+  font-family: var(--font-body);
+  color: var(--text-strong);
+  text-align: left;
+  transition: background 0.12s;
+}
+.app-dropdown__item:hover { background: var(--admin-blue-50); color: var(--admin-blue); }
+.app-dropdown__item--danger { color: var(--text-muted); }
+.app-dropdown__item--danger:hover { background: #fff5f5; color: #dc2626; }
+.app-dropdown__item--exit { color: var(--text-muted); }
+.app-dropdown__item--exit:hover { background: #fff5f5; color: #dc2626; }
+.app-dropdown__divider { height: 1px; background: var(--border-hairline); margin: var(--sp-1) 0; }
 
 /* â”€â”€ Body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .app-body {

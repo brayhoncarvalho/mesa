@@ -1,6 +1,18 @@
 /* ── Google Fonts — DS Premium ── */
 @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600;700&display=swap');
 
+/* ── Override tokens ds-badge info (mais escuro/legível) ── */
+:root {
+  --color-info-50:   #dbeafe;
+  --color-info-200:  #93c5fd;
+  --color-info-text: #1d4ed8;
+}
+
+/* Forçar texto escuro no badge info (DS define o token em seletor mais específico) */
+.ds-badge--info {
+  color: #1d4ed8 !important;
+};
+
 *,
 *::before,
 *::after {

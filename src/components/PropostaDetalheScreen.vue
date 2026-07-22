@@ -174,10 +174,10 @@ const bancos = [
 ]
 
 const dadosBancarios = ref({
-  banco:          isOnboarding ? '341 - ITAÚ UNIBANCO S.A.' : '',
-  agencia:        isOnboarding ? '0001' : 'IIII',
-  numero:         isOnboarding ? '12345' : 'IIIIIIIII',
-  digito:         isOnboarding ? '6' : 'I',
+  banco:          isOnboarding ? '341 - ITAÚ UNIBANCO S.A.' : '237 - BANCO BRADESCO S.A.',
+  agencia:        isOnboarding ? '0001' : '3271',
+  numero:         isOnboarding ? '12345' : '92847503',
+  digito:         isOnboarding ? '6' : '4',
   tipoConta:      'CC',
   debitoAuto:     'Não',
   origem:         'Cliente',
@@ -284,6 +284,20 @@ const gruposDocumentosEmpPessoal = [
   { count: 1, tipo: 'SELFIE COM DOCUMENTO' },
 ]
 
+// Arquivos anexados
+const arquivosAnexadosConsig = [
+  { label: 'Contracheque — Dez/2025', tipo: 'Contracheque', src: '/mesa/assets/contracheque.webp', dataEnvio: '23/12/2025 14:02' },
+  { label: 'Contracheque — Nov/2025', tipo: 'Contracheque', src: '/mesa/assets/contracheque.webp', dataEnvio: '23/12/2025 14:03' },
+  { label: 'CNH — Frente e Verso', tipo: 'Documento de Identidade', src: '/mesa/assets/cnh.webp', dataEnvio: '23/12/2025 14:05' },
+]
+const arquivosAnexadosEmpPessoal = [
+  { label: 'CNH — Frente e Verso', tipo: 'Documento de Identidade', src: '/mesa/assets/cnh.webp', dataEnvio: '22/07/2026 09:14' },
+  { label: 'Selfie com Documento', tipo: 'Selfie', src: '/mesa/assets/avatar-selfie.jpg', dataEnvio: '22/07/2026 09:15' },
+]
+const arquivosAnexados = computed(() => isConsignado.value ? arquivosAnexadosConsig : arquivosAnexadosEmpPessoal)
+
+const docLightbox = ref<string | null>(null)
+
 const dadosFinanceiros = isOnboarding ? {
   codigoProposta: 'web-onboarding',
   codigoLMS:      '',
@@ -316,28 +330,28 @@ const dadosFinanceiros = isOnboarding ? {
   codigoLMS:      '',
   status:         'Em Análise',
   motivo:         'OPORTUNIDADE',
-  iofValorTotal:  '0.46738',
+  iofValorTotal:  '0.01882',
   canal:              'Unimed',
-  dataBase:           '13/06/2024',
-  data1aVisto:        '13/06/2024',
-  dtUltVisto:         '13/03/2026',
-  valorPretendido:    '300.000,00',
-  valorSolicitado:    '200.000,00',
-  valorPrincipal:     '303.487,18',
-  valorBruto:         '378.324,48',
-  txNomAa:            '0.2511',
-  txNomAm:            '0.0350',
-  txCetAa:            '0.5645',
-  txCetAm:            '0.0369',
+  dataBase:           '23/12/2025',
+  data1aVisto:        '05/02/2026',
+  dtUltVisto:         '23/12/2025',
+  valorPretendido:    'R$ 2.800,00',
+  valorSolicitado:    'R$ 2.800,00',
+  valorPrincipal:     'R$ 2.800,00',
+  valorBruto:         'R$ 3.370,80',
+  txNomAa:            '0.1940',
+  txNomAm:            '0.0149',
+  txCetAa:            '0.2147',
+  txCetAm:            '0.0162',
   segmento:           'PF',
-  qtdeParcelas:       '12',
-  valorParcela:       '31.527,04',
-  dataBaseParcela:    '13/06/2024',
-  data1aVistoParcela: '13/06/2024',
-  valorBalanco:       '100.000,00',
-  dataBalanco:        '10/05/2024',
-  inicioBalanco:      '01/02/2003',
-  fimBalanco:         '13/02/2003',
+  qtdeParcelas:       '24',
+  valorParcela:       'R$ 140,45',
+  dataBaseParcela:    '23/12/2025',
+  data1aVistoParcela: '05/02/2026',
+  valorBalanco:       'R$ 0,00',
+  dataBalanco:        '-',
+  inicioBalanco:      '-',
+  fimBalanco:         '-',
 }
 
 // ── Topbar nav ───────────────────────────────────────────────────
@@ -359,6 +373,25 @@ const abaIcones = [
   { label: 'Histórico' },
 ]
 
+const tabRefs = ref<HTMLButtonElement[]>([])
+function onTabKeydown(e: KeyboardEvent, i: number) {
+  if (e.key === 'ArrowRight') {
+    const next = (i + 1) % abaIcones.length
+    abaIcone.value = next
+    nextTick(() => tabRefs.value[next]?.focus())
+  } else if (e.key === 'ArrowLeft') {
+    const prev = (i - 1 + abaIcones.length) % abaIcones.length
+    abaIcone.value = prev
+    nextTick(() => tabRefs.value[prev]?.focus())
+  } else if (e.key === 'Home') {
+    abaIcone.value = 0
+    nextTick(() => tabRefs.value[0]?.focus())
+  } else if (e.key === 'End') {
+    abaIcone.value = abaIcones.length - 1
+    nextTick(() => tabRefs.value[abaIcones.length - 1]?.focus())
+  }
+}
+
 // ── Accordion ────────────────────────────────────────────────────
 const regraAberta    = ref(false)
 const historicoAberto = ref(true)
@@ -368,6 +401,102 @@ const historicoMesa = [
   { dataHora: '21/07/2026 08:15', observacao: 'Documentos de identidade e selfie validados com sucesso.',         atividade: 'Análise de Documentos', acao: 'Aprovado',  email: 'sistema@dock.com.br',            destaque: false },
   { dataHora: '21/07/2026 08:17', observacao: 'Proposta aguardando revisão do analista de crédito.',              atividade: 'Análise Mesa',    acao: 'Em andamento',   email: 'brayhon.carvalho@dock.com.br',   destaque: true  },
 ]
+
+// ── Auditoria de Origem ───────────────────────────────────────────
+const auditoriaOrigem = {
+  canal: 'Web — Onboarding Digital',
+  tipoOrigem: 'Self-service',
+  descOrigem: 'Cliente iniciou a solicitação pelo fluxo de Onboarding no portal web.',
+  ip: '189.28.143.72',
+  dispositivo: 'Mobile · iOS 17.4 · Safari',
+  versaoFluxo: 'v2.3.1',
+  sessionId: 'sess_7f3b2c1a-9e4d-41f0-b8cc-0d5e12a4f9b1',
+  dataInicio: '22/07/2026 09:10:04',
+  dataFim: '22/07/2026 09:14:52',
+  duracao: '4min 48s',
+  utmSource: 'google',
+  utmMedium: 'cpc',
+  utmCampaign: 'emprestimo-pessoal-julho26',
+}
+
+// ── Histórico de Ações ────────────────────────────────────────────
+const historicoAcoes = ref([
+  {
+    dataHora: '22/07/2026 09:14',
+    tipo: 'origem',
+    titulo: 'Proposta criada via Onboarding',
+    detalhe: 'Proposta submetida automaticamente ao fim do fluxo de onboarding digital.',
+    ator: 'sistema@dock.com.br',
+    badge: 'Sistema',
+    cor: '#3b82f6',
+  },
+  {
+    dataHora: '22/07/2026 09:14',
+    tipo: 'regra',
+    titulo: 'Motor de crédito executado',
+    detalhe: 'Score 742 · Aprovado. Limite sugerido R$ 3.500,00 com 24 parcelas de R$ 178,50.',
+    ator: 'motor-credito@dock.com.br',
+    badge: 'Automático',
+    cor: '#10b981',
+  },
+  {
+    dataHora: '22/07/2026 09:15',
+    tipo: 'documento',
+    titulo: 'Documentos anexados pelo cliente',
+    detalhe: 'CNH (frente/verso) e selfie com documento recebidos e armazenados.',
+    ator: 'sistema@dock.com.br',
+    badge: 'Sistema',
+    cor: '#3b82f6',
+  },
+  {
+    dataHora: '22/07/2026 09:17',
+    tipo: 'analise',
+    titulo: 'Encaminhado para análise de mesa',
+    detalhe: 'Proposta direcionada ao analista de crédito para revisão final.',
+    ator: 'sistema@dock.com.br',
+    badge: 'Sistema',
+    cor: '#f59e0b',
+  },
+])
+
+// ── Regras / Resultado ────────────────────────────────────────────
+const regrasResultado = [
+  { regra: 'Score de Crédito',          resultado: 'Aprovado',  valor: '742 pts',           cor: '#10b981' },
+  { regra: 'Capacidade de Pagamento',   resultado: 'Aprovado',  valor: 'R$ 350,00/mês',     cor: '#10b981' },
+  { regra: 'Limite Sugerido',           resultado: 'Aprovado',  valor: 'R$ 3.500,00',        cor: '#10b981' },
+  { regra: 'Política Anti-Fraude',      resultado: 'Aprovado',  valor: 'Risco baixo',        cor: '#10b981' },
+  { regra: 'Compliance KYC',            resultado: 'Validado',  valor: 'CPF regular · Serpro', cor: '#10b981' },
+  { regra: 'Restrição Cadastral',       resultado: 'Sem restrição', valor: 'SPC / Serasa limpos', cor: '#10b981' },
+  { regra: 'Política de Produto',       resultado: 'Elegível',  valor: 'Crédito Pessoal PF', cor: '#10b981' },
+]
+
+// ── Redefinir Oferta ──────────────────────────────────────────────
+const modalRedefinir = ref(false)
+const novoValor = ref('3500')
+const novaParcela = ref('24')
+const novaParcelaMax = ref('350')
+const redefinirError = ref('')
+
+async function confirmarRedefinir() {
+  if (!novaParcelaMax.value || isNaN(Number(novaParcelaMax.value)) || Number(novaParcelaMax.value) < 1) {
+    redefinirError.value = 'Informe um valor válido para o limite de parcela.'
+    return
+  }
+  redefinirError.value = ''
+  await new Promise(r => setTimeout(r, 700))
+  const dataHora = new Date().toLocaleString('pt-BR')
+  historicoAcoes.value.push({
+    dataHora,
+    tipo: 'redefinicao',
+    titulo: 'Limite de parcela redefinido pelo analista',
+    detalhe: `Novo limite máximo de parcela: R$ ${Number(novaParcelaMax.value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}. Ajuste manual registrado.`,
+    ator: 'brayhon.carvalho@dock.com.br',
+    badge: 'Analista',
+    cor: '#8b5cf6',
+  })
+  modalRedefinir.value = false
+  mostrarToast('Oferta redefinida com sucesso')
+}
 
 // ── Modal de decisão ─────────────────────────────────────────────
 const modalAberto = ref<'aprovar' | 'reprovar' | 'observacao' | 'cancelar' | 'desfazer' | null>(null)
@@ -414,6 +543,10 @@ function abrirModal(tipo: 'aprovar' | 'reprovar' | 'observacao' | 'cancelar' | '
   motivoTexto.value = ''
   motivoError.value = ''
   modalAberto.value = tipo
+  nextTick(() => {
+    const dlg = document.querySelector('.pd-modal-bg [role="dialog"] button, .pd-modal-bg button') as HTMLElement
+    dlg?.focus()
+  })
 }
 function fecharModal() { modalAberto.value = null }
 
@@ -526,16 +659,21 @@ async function confirmarDecisao() {
         <button
           v-for="(tab, i) in abaIcones"
           :key="i"
+          :ref="el => { if (el) tabRefs[i] = el as HTMLButtonElement }"
           role="tab"
+          :id="`pd-tab-${i}`"
           :aria-selected="abaIcone === i"
+          :aria-controls="`pd-panel-${i}`"
+          :tabindex="abaIcone === i ? 0 : -1"
           class="pd-tab"
           :class="{ 'pd-tab--active': abaIcone === i }"
           @click="abaIcone = i"
+          @keydown="onTabKeydown($event, i)"
         >{{ tab.label }}</button>
       </div>
 
       <!-- ══ Tab 0: Dados do Cliente ══ -->
-      <section v-if="abaIcone === 0" class="pd-panel" aria-label="Dados do Cliente">
+      <section v-if="abaIcone === 0" class="pd-panel" role="tabpanel" :id="`pd-panel-0`" :aria-labelledby="`pd-tab-0`">
         <div class="pd-card">
           <div class="pd-card__head">
             <h2 class="pd-card__title">Dados Gerais</h2>
@@ -570,7 +708,7 @@ async function confirmarDecisao() {
       </section>
 
       <!-- ══ Tab 1: Contato ══ -->
-      <section v-if="abaIcone === 1" class="pd-panel pd-panel--2col" aria-label="Dados de contato">
+      <section v-if="abaIcone === 1" class="pd-panel pd-panel--2col" role="tabpanel" :id="`pd-panel-1`" :aria-labelledby="`pd-tab-1`">
         <!-- Endereço -->
         <div class="pd-card" v-if="enderecos[0]">
           <div class="pd-card__head pd-card__head--icon">
@@ -623,7 +761,7 @@ async function confirmarDecisao() {
       </section>
 
       <!-- ══ Tab 2: Dados Bancários ══ -->
-      <section v-if="abaIcone === 2" class="pd-panel" aria-label="Dados bancários">
+      <section v-if="abaIcone === 2" class="pd-panel" role="tabpanel" :id="`pd-panel-2`" :aria-labelledby="`pd-tab-2`">
         <div class="pd-card">
           <div class="pd-card__head">
             <h2 class="pd-card__title">Conta para desembolso</h2>
@@ -648,7 +786,7 @@ async function confirmarDecisao() {
       </section>
 
       <!-- ══ Tab 3: Financeiro ══ -->
-      <section v-if="abaIcone === 3" class="pd-panel" aria-label="Dados financeiros">
+      <section v-if="abaIcone === 3" class="pd-panel" role="tabpanel" :id="`pd-panel-3`" :aria-labelledby="`pd-tab-3`" aria-label="Dados financeiros">
         <!-- Condições -->
         <div class="pd-card">
           <div class="pd-card__head"><h2 class="pd-card__title">Condições do financiamento</h2></div>
@@ -692,7 +830,7 @@ async function confirmarDecisao() {
       </section>
 
       <!-- ══ Tab 4: Documentos ══ -->
-      <section v-if="abaIcone === 4" class="pd-panel" aria-label="Documentos">
+      <section v-if="abaIcone === 4" class="pd-panel" role="tabpanel" :id="`pd-panel-4`" :aria-labelledby="`pd-tab-4`" aria-label="Documentos">
         <div class="pd-card">
           <div class="pd-card__head">
             <h2 class="pd-card__title">Checklist de documentos</h2>
@@ -726,12 +864,112 @@ async function confirmarDecisao() {
             </template>
           </div>
         </div>
+
+        <!-- Arquivos anexados -->
+        <div class="pd-card" style="margin-top: var(--sp-4)">
+          <div class="pd-card__head">
+            <h2 class="pd-card__title">Arquivos Anexados</h2>
+            <span class="pd-field__lbl" style="margin-left:auto">{{ arquivosAnexados.length }} arquivo(s)</span>
+          </div>
+          <div class="pd-anexos">
+            <button
+              v-for="arq in arquivosAnexados"
+              :key="arq.label"
+              class="pd-anexo-card"
+              @click="docLightbox = arq.src"
+              :aria-label="'Visualizar ' + arq.label"
+            >
+              <div class="pd-anexo-thumb">
+                <img :src="arq.src" :alt="arq.label" class="pd-anexo-img" />
+                <div class="pd-anexo-overlay" aria-hidden="true">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                </div>
+              </div>
+              <div class="pd-anexo-info">
+                <span class="pd-anexo-label">{{ arq.label }}</span>
+                <span class="pd-anexo-tipo">{{ arq.tipo }}</span>
+                <span class="pd-anexo-data">{{ arq.dataEnvio }}</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Lightbox -->
+        <Teleport to="body">
+          <div v-if="docLightbox" class="pd-lightbox" @click.self="docLightbox = null" role="dialog" aria-modal="true" aria-label="Visualizar documento">
+            <button class="pd-lightbox__close" @click="docLightbox = null" aria-label="Fechar">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+            <img :src="docLightbox" alt="Documento" class="pd-lightbox__img" />
+          </div>
+        </Teleport>
       </section>
 
       <!-- ══ Tab 5: Histórico ══ -->
-      <section v-if="abaIcone === 5" class="pd-panel" aria-label="Histórico da Mesa">
-        <div class="pd-card">
-          <div class="pd-card__head"><h2 class="pd-card__title">Histórico da Mesa</h2></div>
+      <section v-if="abaIcone === 5" class="pd-panel" role="tabpanel" :id="`pd-panel-5`" :aria-labelledby="`pd-tab-5`" aria-label="Histórico e Auditoria">
+
+        <!-- 1. Auditoria de Origem -->
+        <div class="pd-card aud-card">
+          <div class="pd-card__head">
+            <span class="aud-icon aud-icon--origin">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </span>
+            <h2 class="pd-card__title">Auditoria de Origem</h2>
+            <span class="aud-badge aud-badge--web">Onboarding Digital</span>
+          </div>
+          <div class="aud-origin-grid">
+            <div class="aud-origin-row"><span class="aud-origin-lbl">Canal</span><span class="aud-origin-val">{{ auditoriaOrigem.canal }}</span></div>
+            <div class="aud-origin-row"><span class="aud-origin-lbl">Tipo de Origem</span><span class="aud-origin-val">{{ auditoriaOrigem.tipoOrigem }}</span></div>
+            <div class="aud-origin-row aud-origin-row--full"><span class="aud-origin-lbl">Descrição</span><span class="aud-origin-val">{{ auditoriaOrigem.descOrigem }}</span></div>
+            <div class="aud-origin-row"><span class="aud-origin-lbl">IP do Cliente</span><span class="aud-origin-val aud-mono">{{ auditoriaOrigem.ip }}</span></div>
+            <div class="aud-origin-row"><span class="aud-origin-lbl">Dispositivo</span><span class="aud-origin-val">{{ auditoriaOrigem.dispositivo }}</span></div>
+            <div class="aud-origin-row"><span class="aud-origin-lbl">Início do Fluxo</span><span class="aud-origin-val aud-mono">{{ auditoriaOrigem.dataInicio }}</span></div>
+            <div class="aud-origin-row"><span class="aud-origin-lbl">Fim do Fluxo</span><span class="aud-origin-val aud-mono">{{ auditoriaOrigem.dataFim }}</span></div>
+            <div class="aud-origin-row"><span class="aud-origin-lbl">Duração</span><span class="aud-origin-val">{{ auditoriaOrigem.duracao }}</span></div>
+            <div class="aud-origin-row"><span class="aud-origin-lbl">Versão do Fluxo</span><span class="aud-origin-val aud-mono">{{ auditoriaOrigem.versaoFluxo }}</span></div>
+            <div class="aud-origin-row aud-origin-row--full"><span class="aud-origin-lbl">Session ID</span><span class="aud-origin-val aud-mono aud-mono--sm">{{ auditoriaOrigem.sessionId }}</span></div>
+            <div class="aud-origin-row"><span class="aud-origin-lbl">UTM Source</span><span class="aud-origin-val aud-mono">{{ auditoriaOrigem.utmSource }}</span></div>
+            <div class="aud-origin-row"><span class="aud-origin-lbl">UTM Medium</span><span class="aud-origin-val aud-mono">{{ auditoriaOrigem.utmMedium }}</span></div>
+            <div class="aud-origin-row aud-origin-row--full"><span class="aud-origin-lbl">UTM Campaign</span><span class="aud-origin-val aud-mono">{{ auditoriaOrigem.utmCampaign }}</span></div>
+          </div>
+        </div>
+
+        <!-- 2. Histórico de Ações -->
+        <div class="pd-card aud-card" style="margin-top: var(--sp-4)">
+          <div class="pd-card__head">
+            <span class="aud-icon aud-icon--actions">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </span>
+            <h2 class="pd-card__title">Histórico de Ações</h2>
+            <span class="aud-badge aud-badge--count">{{ historicoAcoes.length }} eventos</span>
+          </div>
+          <div class="aud-timeline">
+            <div v-for="(a, i) in historicoAcoes" :key="i" class="aud-timeline__row">
+              <div class="aud-timeline__track">
+                <div class="aud-timeline__dot" :style="{ background: a.cor, boxShadow: `0 0 0 3px ${a.cor}22` }"></div>
+                <div v-if="i < historicoAcoes.length - 1" class="aud-timeline__line"></div>
+              </div>
+              <div class="aud-timeline__body">
+                <div class="aud-timeline__head">
+                  <strong class="aud-timeline__titulo">{{ a.titulo }}</strong>
+                  <span class="aud-timeline__badge" :style="{ background: a.cor + '1A', color: a.cor }">{{ a.badge }}</span>
+                  <span class="aud-timeline__data">{{ a.dataHora }}</span>
+                </div>
+                <p class="aud-timeline__detalhe">{{ a.detalhe }}</p>
+                <p class="aud-timeline__ator">{{ a.ator }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Histórico de Mesa -->
+        <div class="pd-card aud-card" style="margin-top: var(--sp-4)">
+          <div class="pd-card__head">
+            <span class="aud-icon aud-icon--mesa">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </span>
+            <h2 class="pd-card__title">Histórico de Mesa</h2>
+          </div>
           <div class="pd-history">
             <div v-for="(h, i) in historicoMesa" :key="i" class="pd-history__row">
               <div class="pd-history__track">
@@ -749,6 +987,39 @@ async function confirmarDecisao() {
             </div>
           </div>
         </div>
+
+        <!-- 4. Regra / Resultado -->
+        <div class="pd-card aud-card" style="margin-top: var(--sp-4)">
+          <div class="pd-card__head">
+            <span class="aud-icon aud-icon--regra">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+            </span>
+            <h2 class="pd-card__title">Regra / Resultado</h2>
+            <span class="aud-badge aud-badge--aprovado">{{ regrasResultado.filter(r => r.resultado === 'Aprovado' || r.resultado === 'Validado' || r.resultado === 'Elegível' || r.resultado === 'Sem restrição').length }}/{{ regrasResultado.length }} aprovadas</span>
+          </div>
+          <table class="aud-regras-table" aria-label="Resultado das regras de crédito">
+            <thead>
+              <tr>
+                <th class="aud-regras-th">Regra</th>
+                <th class="aud-regras-th">Resultado</th>
+                <th class="aud-regras-th aud-regras-th--right">Valor / Detalhe</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="r in regrasResultado" :key="r.regra" class="aud-regras-tr">
+                <td class="aud-regras-td aud-regras-td--nome">{{ r.regra }}</td>
+                <td class="aud-regras-td">
+                  <span class="aud-regras-badge" :style="{ background: r.cor + '1A', color: r.cor }">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                    {{ r.resultado }}
+                  </span>
+                </td>
+                <td class="aud-regras-td aud-regras-td--val">{{ r.valor }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
       </section>
 
       <!-- ── Barra de ações ────────────────────── -->
@@ -761,6 +1032,12 @@ async function confirmarDecisao() {
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
       </svg>
       Observação
+    </button>
+    <button class="pd-action-redef" @click="modalRedefinir = true">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+      Redefinir Oferta
     </button>
     <button class="pd-action-reprovar" @click="abrirModal('reprovar')">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
@@ -776,6 +1053,58 @@ async function confirmarDecisao() {
     </button>
   </div>
 
+  <!-- ── Modal Redefinir Oferta ─────────────────────────────────── -->
+  <Teleport to="body">
+    <div v-if="modalRedefinir" class="pd-modal-bg" @click.self="modalRedefinir = false" role="dialog" aria-modal="true" aria-labelledby="redef-title">
+      <div class="pd-modal">
+        <div class="pd-modal__head">
+          <div>
+            <h3 class="pd-modal__title" id="redef-title">Redefinir Oferta</h3>
+            <p class="pd-modal__sub">A alteração será registrada no histórico de ações.</p>
+          </div>
+          <button class="pd-modal__close" @click="modalRedefinir = false" aria-label="Fechar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="pd-modal__body">
+
+          <!-- Limite máximo de parcela -->
+          <div class="pd-field">
+            <label class="pd-field__lbl" for="redef-parcela-max">Limite máximo de parcela (R$)</label>
+            <input
+              id="redef-parcela-max"
+              v-model="novaParcelaMax"
+              type="number"
+              min="1"
+              class="pd-modal__input"
+              :class="{ 'pd-modal__input--error': redefinirError }"
+              placeholder="Ex: 350"
+              aria-describedby="redef-parcela-hint"
+            />
+            <span id="redef-parcela-hint" class="pd-field__hint">Valor máximo aceito por parcela para aprovação da oferta.</span>
+            <span v-if="redefinirError" class="pd-modal__error" role="alert">{{ redefinirError }}</span>
+          </div>
+
+          <!-- Resumo -->
+          <div class="redef-summary">
+            <div class="redef-summary__item">
+              <span class="redef-summary__lbl">Limite definido</span>
+              <span class="redef-summary__val">R$ {{ Number(novaParcelaMax || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) }}</span>
+            </div>
+          </div>
+
+        </div>
+        <div class="pd-modal__foot">
+          <button class="pd-modal__btn-cancel" @click="modalRedefinir = false">Cancelar</button>
+          <button class="pd-modal__btn-confirm" @click="confirmarRedefinir" :disabled="processando">
+            <svg v-if="processando" class="pd-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+            Confirmar Redefinição
+          </button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+
     </div><!-- /pd-content -->
   </main>
 
@@ -786,11 +1115,11 @@ async function confirmarDecisao() {
 
   <!-- ── Modal ──────────────────────────────────────── -->
   <Teleport to="body">
-    <div v-if="modalAberto" class="pd-modal-bg" @click.self="fecharModal()" role="dialog" :aria-label="modalAberto === 'aprovar' ? 'Confirmar Aprovação' : modalAberto === 'reprovar' ? 'Confirmar Reprovação' : 'Adicionar Observação'" aria-modal="true">
+    <div v-if="modalAberto" class="pd-modal-bg" @click.self="fecharModal()" role="dialog" :aria-labelledby="'modal-action-title'" aria-modal="true">
       <div class="pd-modal">
         <div class="pd-modal__head">
           <div>
-            <h3 class="pd-modal__title">
+            <h3 class="pd-modal__title" id="modal-action-title">
               {{ modalAberto === 'aprovar' ? 'Confirmar Aprovação'
                : modalAberto === 'reprovar' ? 'Confirmar Reprovação'
                : 'Adicionar Observação' }}
@@ -1159,6 +1488,207 @@ async function confirmarDecisao() {
 .pd-doc-badge--ok      { background: #E7F7EE; color: #177A4C; }
 .pd-doc-badge--pending { background: #FFF4E0; color: #93610A; }
 
+/* ── Arquivos Anexados ──────────────────────────────────────────── */
+.pd-anexos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  padding: 20px 24px;
+}
+.pd-anexo-card {
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+  border: 1.5px solid var(--admin-border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #FBFDFF;
+  cursor: pointer;
+  transition: box-shadow 0.15s, border-color 0.15s;
+  text-align: left;
+  font-family: var(--font-body);
+}
+.pd-anexo-card:hover { box-shadow: 0 4px 16px rgba(29,79,215,.12); border-color: var(--admin-blue-border); }
+.pd-anexo-card:focus-visible { outline: 2px solid var(--admin-blue); outline-offset: 2px; }
+.pd-anexo-thumb {
+  position: relative;
+  width: 100%;
+  height: 130px;
+  overflow: hidden;
+  background: #f1f5f9;
+}
+.pd-anexo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.2s;
+}
+.pd-anexo-card:hover .pd-anexo-img { transform: scale(1.04); }
+.pd-anexo-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.pd-anexo-card:hover .pd-anexo-overlay { opacity: 1; }
+.pd-anexo-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px 12px;
+}
+.pd-anexo-label { font-size: 13px; font-weight: 600; color: var(--admin-text-strong); }
+.pd-anexo-tipo  { font-size: 11px; color: var(--admin-blue); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.pd-anexo-data  { font-size: 11px; color: var(--admin-muted); margin-top: 2px; }
+
+/* Lightbox */
+.pd-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.82);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-6);
+}
+.pd-lightbox__img {
+  max-width: 90vw;
+  max-height: 88vh;
+  border-radius: 12px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.6);
+  object-fit: contain;
+}
+.pd-lightbox__close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,.15);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.pd-lightbox__close:hover { background: rgba(255,255,255,.28); }
+
+.pd-lightbox__close:hover { background: rgba(255,255,255,.28); }
+
+/* ── Redefinir Oferta (action bar btn) ──────────────────────────── */
+.pd-action-redef {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 40px; padding: 0 16px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(139, 92, 246, .5);
+  background: rgba(139, 92, 246, .15);
+  color: #c4b5fd;
+  font-size: 13.5px; font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer; transition: background .12s, color .12s, border-color .12s;
+  white-space: nowrap;
+}
+.pd-action-redef:hover { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+.pd-action-redef:focus-visible { outline: 2px solid rgba(255,255,255,.6); outline-offset: 2px; }
+
+/* ── Auditoria cards ─────────────────────────────────────────────── */
+.aud-card .pd-card__head { gap: var(--sp-2_5); }
+.aud-icon {
+  width: 30px; height: 30px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.aud-icon--origin  { background: #eff6ff; color: #3b82f6; }
+.aud-icon--actions { background: #f0fdf4; color: #10b981; }
+.aud-icon--mesa    { background: #f5f3ff; color: #8b5cf6; }
+.aud-icon--regra   { background: #fff7ed; color: #f59e0b; }
+
+.aud-badge {
+  height: 22px; display: inline-flex; align-items: center;
+  padding: 0 var(--sp-2_5); border-radius: 999px;
+  font-size: var(--fs-fine); font-weight: 700; letter-spacing: var(--ls-step);
+  margin-left: auto;
+}
+.aud-badge--web      { background: #eff6ff; color: #3b82f6; }
+.aud-badge--count    { background: var(--admin-blue-50); color: var(--admin-muted); }
+.aud-badge--aprovado { background: #dcfce7; color: #15803d; }
+
+/* Auditoria de Origem grid */
+.aud-origin-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  padding: 0 var(--sp-6) var(--sp-5);
+}
+.aud-origin-row {
+  display: flex; flex-direction: column; gap: var(--sp-1);
+  padding: var(--sp-2_5) var(--sp-3) var(--sp-2_5) 0;
+  border-bottom: 1px solid var(--border-hairline);
+}
+.aud-origin-row--full { grid-column: 1 / -1; }
+.aud-origin-lbl { font-size: var(--fs-fine); font-weight: 700; text-transform: uppercase; letter-spacing: var(--ls-step); color: var(--admin-muted); }
+.aud-origin-val { font-size: var(--fs-label); color: var(--admin-text-strong); font-weight: 500; }
+.aud-mono { font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace; font-size: var(--fs-caption); }
+.aud-mono--sm { font-size: var(--fs-fine); word-break: break-all; }
+
+/* Timeline de ações */
+.aud-timeline { padding: var(--sp-5) var(--sp-6); display: flex; flex-direction: column; }
+.aud-timeline__row { display: flex; gap: var(--sp-4); }
+.aud-timeline__track {
+  display: flex; flex-direction: column;
+  align-items: center; flex-shrink: 0; width: 20px;
+}
+.aud-timeline__dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  flex-shrink: 0; margin-top: 3px;
+}
+.aud-timeline__line { width: 2px; flex: 1; min-height: 20px; background: var(--border-hairline); margin: var(--sp-1) 0; }
+.aud-timeline__body { flex: 1; padding-bottom: var(--sp-5); }
+.aud-timeline__head { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-1); }
+.aud-timeline__titulo { font-size: var(--fs-ui); font-weight: 600; color: var(--admin-text-strong); }
+.aud-timeline__badge {
+  height: 22px; display: inline-flex; align-items: center;
+  padding: 0 var(--sp-2_5); border-radius: 999px;
+  font-size: var(--fs-fine); font-weight: 700; letter-spacing: var(--ls-step);
+}
+.aud-timeline__data { font-size: var(--fs-caption); color: var(--admin-muted); margin-left: auto; font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace; }
+.aud-timeline__detalhe { font-size: var(--fs-label); color: var(--admin-text); line-height: var(--lh-body); }
+.aud-timeline__ator { font-size: var(--fs-caption); color: var(--admin-muted); margin-top: var(--sp-1); }
+
+/* Regras table */
+.aud-regras-table {
+  width: 100%; border-collapse: collapse;
+}
+.aud-regras-th {
+  font-size: var(--fs-fine); font-weight: 700; text-transform: uppercase;
+  letter-spacing: var(--ls-step); color: var(--admin-muted);
+  padding: var(--sp-2_5) var(--sp-6); text-align: left;
+  border-bottom: 1px solid var(--border-hairline);
+}
+.aud-regras-th--right { text-align: right; }
+.aud-regras-tr:not(:last-child) td { border-bottom: 1px solid var(--border-hairline); }
+.aud-regras-td {
+  padding: var(--sp-3) var(--sp-6);
+  font-size: var(--fs-label); color: var(--admin-text-strong);
+  vertical-align: middle;
+}
+.aud-regras-td--nome { font-weight: 600; }
+.aud-regras-td--val { text-align: right; color: var(--admin-muted); font-size: var(--fs-caption); font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace; }
+.aud-regras-badge {
+  display: inline-flex; align-items: center; gap: var(--sp-1_5);
+  height: 22px; padding: 0 var(--sp-2_5); border-radius: 999px;
+  font-size: var(--fs-fine); font-weight: 700;
+}
+
 /* ── Histórico ──────────────────────────────────────────────────── */
 .pd-history { padding: 22px 24px; display: flex; flex-direction: column; }
 .pd-history__row { display: flex; gap: 16px; }
@@ -1194,10 +1724,10 @@ async function confirmarDecisao() {
 .pd-action-bar {
   display: flex; align-items: center; gap: 10px;
   padding: 14px 20px;
-  background: rgba(14, 42, 92, 0.96);
-  border: 1px solid rgba(255,255,255,.10);
+  background: linear-gradient(135deg, #0E2A5C 0%, #1D4FD7 100%);
+  border: none;
   border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(14,42,92,.18);
+  box-shadow: 0 20px 50px rgba(14,42,92,.18);
   flex-wrap: wrap;
 }
 .pd-action-bar__label {
@@ -1296,6 +1826,47 @@ async function confirmarDecisao() {
 .pd-modal__close:hover { background: var(--admin-blue-border); color: var(--admin-blue); }
 .pd-modal__body { padding: 20px 24px; }
 .pd-modal__error { margin: 8px 0 0; font-size: 12.5px; color: #C2483B; font-weight: 600; }
+.pd-field__hint { font-size: var(--fs-fine); color: var(--admin-muted); margin-top: var(--sp-1); display: block; }
+
+/* Input padrão do modal */
+.pd-modal__input {
+  width: 100%;
+  height: 42px;
+  padding: 0 var(--sp-3_5);
+  border: 1.5px solid var(--admin-border);
+  border-radius: var(--radius-input);
+  font-size: var(--fs-label);
+  font-family: var(--font-body);
+  color: var(--text-heading);
+  background: var(--surface-card);
+  transition: border-color .15s, box-shadow .15s;
+  box-sizing: border-box;
+}
+.pd-modal__input:focus {
+  outline: none;
+  border-color: var(--admin-blue);
+  box-shadow: 0 0 0 3px rgba(29,79,215,.12);
+}
+.pd-modal__input--error {
+  border-color: #C2483B;
+  box-shadow: 0 0 0 3px rgba(194,72,59,.10);
+}
+
+.redef-summary {
+  display: flex;
+  gap: var(--sp-3);
+  margin-top: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--admin-blue-50);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+}
+.redef-summary__item { display: flex; flex-direction: column; gap: var(--sp-1); flex: 1; }
+.redef-summary__lbl { font-size: var(--fs-fine); font-weight: 700; text-transform: uppercase; letter-spacing: var(--ls-step); color: var(--admin-muted); }
+.redef-summary__val { font-size: var(--fs-label); font-weight: 600; color: var(--admin-text-strong); }
+.redef-summary__status { font-size: var(--fs-caption); font-weight: 700; }
+.redef-summary__status.ok   { color: #15803d; }
+.redef-summary__status.warn { color: #b45309; }
 .pd-modal__foot {
   display: flex; justify-content: flex-end; gap: 10px;
   padding: 16px 24px; border-top: 1px solid var(--admin-border-light);

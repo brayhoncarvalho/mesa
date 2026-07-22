@@ -109,10 +109,10 @@ const statusClasses: Record<string, string> = {
     </div>
 
     <teleport to="body">
-      <div v-if="modalAberto" class="cu-overlay" role="dialog" :aria-label="editando ? 'Editar usuário' : 'Novo usuário'" @click.self="modalAberto = false">
+      <div v-if="modalAberto" class="cu-overlay" role="dialog" aria-modal="true" aria-labelledby="cu-modal-title" @click.self="modalAberto = false">
         <div class="cu-modal">
           <div class="cu-modal__head">
-            <h2 class="cu-modal__title">{{ editando ? 'Editar Usuário' : 'Novo Usuário' }}</h2>
+            <h2 class="cu-modal__title" id="cu-modal-title">{{ editando ? 'Editar Usuário' : 'Novo Usuário' }}</h2>
             <button class="cu-modal__close" @click="modalAberto = false" aria-label="Fechar">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>

@@ -59,14 +59,14 @@ async function handleLogin() {
     </div>
 
     <main class="login-main">
-      <div class="login-card" role="main">
+      <section class="login-card" aria-labelledby="login-heading">
 
         <div class="login-card__logo-wrap">
           <img src="/assets/dock-logo-color.png" alt="Dock" class="login-card__logo" />
         </div>
 
         <div class="login-card__header">
-          <h1 class="login-card__title">Bem-vindo de volta</h1>
+          <h1 class="login-card__title" id="login-heading">Acesse sua conta</h1>
         </div>
 
         <form class="login-form" novalidate @submit.prevent="handleLogin">
@@ -147,7 +147,7 @@ async function handleLogin() {
 
         </form>
 
-      </div>
+      </section>
     </main>
 
   </div>
@@ -211,6 +211,7 @@ async function handleLogin() {
 .login-card__logo-wrap {
   display: flex;
   align-items: center;
+  justify-content: center;
   margin-bottom: var(--sp-7);
 }
 .login-card__logo {
@@ -227,6 +228,7 @@ async function handleLogin() {
   color: var(--text-heading);
   line-height: 1.15;
   letter-spacing: var(--ls-h1-flow);
+  text-align: center;
 }
 
 .login-form {

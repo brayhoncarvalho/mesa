@@ -168,7 +168,7 @@ const situacaoLabel: Record<string, string> = {
         <!-- Welcome -->
         <div class="hero">
           <div>
-            <h1 class="hero__title">Bem-vindo de volta <span class="hero__name">{{ operadorNome }}</span>!</h1>
+            <h1 class="hero__title">Bem-vindo, <span class="hero__name">{{ operadorNome }}</span>!</h1>
             <p class="hero__sub">Seu último login foi {{ ultimoLogin }}</p>
           </div>
           <div class="hero__ctrl">
@@ -193,6 +193,7 @@ const situacaoLabel: Record<string, string> = {
               <span class="kpi__delta" :class="kpi.up ? 'is-up' : 'is-down'">
                 <svg v-if="kpi.up" width="10" height="10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><polyline points="18 15 12 9 6 15" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <svg v-else width="10" height="10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><polyline points="6 9 12 15 18 9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="sr-only">{{ kpi.up ? 'Alta' : 'Baixa' }}:</span>
                 {{ kpi.delta }}
               </span>
               <span class="kpi__money">{{ kpi.money }}</span>
@@ -246,18 +247,20 @@ const situacaoLabel: Record<string, string> = {
           <!-- Donut tipos -->
           <div class="card chart-card chart-card--sm">
             <h2 class="chart-title">Tipos de Empréstimo</h2>
-            <div class="pie-wrap">
-              <svg viewBox="0 0 180 180" width="160" height="160" aria-hidden="true">
-                <path v-for="(s, i) in pieSlices" :key="i" :d="s.d" :fill="s.c" stroke="#fff" stroke-width="1.5"/>
-              </svg>
+            <div class="pie-body">
+              <div class="pie-wrap">
+                <svg viewBox="0 0 180 180" width="220" height="220" aria-hidden="true">
+                  <path v-for="(s, i) in pieSlices" :key="i" :d="s.d" :fill="s.c" stroke="#fff" stroke-width="1.5"/>
+                </svg>
+              </div>
+              <ul class="pie-legend">
+                <li v-for="item in tiposEmprestimo" :key="item.label" class="pie-legend__item">
+                  <span class="pie-legend__dot" :style="{ background: item.color }"></span>
+                  <span class="pie-legend__name">{{ item.label }}</span>
+                  <span class="pie-legend__pct">{{ item.value }}%</span>
+                </li>
+              </ul>
             </div>
-            <ul class="pie-legend">
-              <li v-for="item in tiposEmprestimo" :key="item.label" class="pie-legend__item">
-                <span class="pie-legend__dot" :style="{ background: item.color }"></span>
-                <span class="pie-legend__name">{{ item.label }}</span>
-                <span class="pie-legend__pct">{{ item.value }}%</span>
-              </li>
-            </ul>
           </div>
 
         </div>
@@ -304,11 +307,11 @@ const situacaoLabel: Record<string, string> = {
                     </span>
                   </td>
                   <td class="tbl-td">
-                    <span class="canal-badge" :style="{ background: getCanalBg(p.canal) }">{{ p.canal }}</span>
+                    <span class="canal-badge">{{ p.canal }}</span>
                   </td>
                   <td class="tbl-td tbl-td--date">{{ p.dataSolicitacao }}</td>
                   <td class="tbl-td">
-                    <DsBadge :variant="p.situacao === 'EmAnalise' ? 'info' : 'navy'">{{ situacaoLabel[p.situacao] ?? p.situacao }}</DsBadge>
+                    <span class="ativ-badge" :class="`ativ-badge--${p.situacao.toLowerCase()}`">{{ situacaoLabel[p.situacao] ?? p.situacao }}</span>
                   </td>
                   <td class="tbl-td tbl-td--r">
                     <button class="action-btn" @click="analisar(p)" :aria-label="`Analisar proposta de ${p.nome}`">
@@ -485,9 +488,13 @@ const situacaoLabel: Record<string, string> = {
 /* ── Charts ───────────────────────────────────────────────────── */
 .charts {
   display: grid;
-  grid-template-columns: 1fr 280px;
+  grid-template-columns: 1fr 1fr;
   gap: var(--sp-3_5);
-  align-items: start;
+  align-items: stretch;
+}
+.chart-card--sm {
+  display: flex;
+  flex-direction: column;
 }
 .chart-title {
   font-family: var(--font-display);
@@ -514,8 +521,9 @@ const situacaoLabel: Record<string, string> = {
 }
 .bar-legend__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-.pie-wrap { display: flex; justify-content: center; margin-bottom: var(--sp-3_5); }
-.pie-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-1_5); }
+.pie-body { display: flex; align-items: center; justify-content: center; gap: var(--sp-4); flex: 1; }
+.pie-wrap { display: flex; justify-content: center; flex-shrink: 0; }
+.pie-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-1_5); flex: 1; min-width: 0; }
 .pie-legend__item { display: flex; align-items: center; gap: var(--sp-1_5); font-size: var(--fs-caption); }
 .pie-legend__dot  { width: 10px; height: 10px; border-radius: var(--radius-sm); flex-shrink: 0; }
 .pie-legend__name { flex: 1; color: var(--text-strong); }
@@ -567,31 +575,32 @@ const situacaoLabel: Record<string, string> = {
 .tbl-td--r    { text-align: right; }
 .tbl-empty    { padding: var(--sp-7) var(--sp-6); text-align: center; color: var(--text-muted); font-size: var(--fs-label); }
 
-/* ── Badges ───────────────────────────────────────────────────── */
-.canal-badge {
-  display: inline-flex;
-  align-items: center;
-  height: var(--h-badge);
-  padding: 0 var(--sp-3);
+/* ── Badges (padrão unificado) ────────────────────────────────── */
+.canal-badge,
+.tipo-badge,
+.ativ-badge {
+  display: inline-flex; align-items: center;
+  height: 24px; padding: 0 10px;
   border-radius: var(--radius-pill);
-  font-size: var(--fs-micro);
-  font-weight: 700;
-  color: #fff;
-  white-space: nowrap;
-  background: var(--admin-blue);
-}
-.tipo-badge {
-  display: inline-flex;
-  align-items: center;
-  height: var(--h-badge);
-  padding: 0 var(--sp-3);
-  border-radius: var(--radius-pill);
-  font-size: var(--fs-micro);
-  font-weight: 700;
+  font-size: 11px; font-weight: 700;
   white-space: nowrap;
 }
-.tipo-badge--consig  { background: var(--admin-blue-100); color: var(--admin-blue); }
-.tipo-badge--pessoal { background: #f3e5f5; color: #6a1b9a; }
+/* Canal */
+.canal-badge { background: #f1f5f9; color: #334155; }
+/* Tipo */
+.tipo-badge--consig  { background: #e0f2fe; color: #0369a1; }
+.tipo-badge--pessoal { background: #dbeafe; color: #1d4ed8; }
+/* Situação */
+.ativ-badge           { background: var(--admin-blue-100); color: var(--admin-blue); }
+.ativ-badge--emanalise    { background: #dbeafe; color: #1d4ed8; }
+.ativ-badge--aprovada     { background: #dcfce7; color: #15803d; }
+.ativ-badge--liberada     { background: #d1fae5; color: #065f46; }
+.ativ-badge--reprovada    { background: #fee2e2; color: #b91c1c; }
+.ativ-badge--cancelada    { background: #f1f5f9; color: #475569; }
+.ativ-badge--formalização { background: #fef9c3; color: #854d0e; }
+
+/* ── Screen-reader only ────────────────────────────────── */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
 /* ── Botão de ação ────────────────────────────────────────────── */
 .action-btn {
